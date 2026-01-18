@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級（1年生）全80文字データ（タイポ修正済み）
+// 漢検10級（1年生）全80文字データ（文脈に合わせた読みに修正済み）
 const kanjiList = [
-  { kanji: "一", yomi: "いち", sentence: "りんごが（一）ごある。" },
+  { kanji: "一", yomi: "いち", sentence: "１年（一）せい。" },
   { kanji: "右", yomi: "みぎ", sentence: "（右）の手をあげる。" },
   { kanji: "雨", yomi: "あめ", sentence: "（雨）がふってきた。" },
   { kanji: "円", yomi: "えん", sentence: "百（円）だまをひろう。" },
@@ -12,9 +12,9 @@ const kanjiList = [
   { kanji: "火", yomi: "ひ", sentence: "（火）がもえている。" },
   { kanji: "花", yomi: "はな", sentence: "きれいな（花）がさく。" },
   { kanji: "貝", yomi: "かい", sentence: "海で（貝）をひろう。" },
-  { kanji: "学", yomi: "がく", sentence: "（学）こうにいく。" },
+  { kanji: "学", yomi: "がっ", sentence: "（学）こうにいく。" }, // 「がっ」に修正
   { kanji: "気", yomi: "き", sentence: "（気）もちがいい。" },
-  { kanji: "休", yomi: "きゅう", sentence: "（休）みのひ。" },
+  { kanji: "休", yomi: "やす", sentence: "（休）みのひ。" }, // 「やす」に修正
   { kanji: "玉", yomi: "たま", sentence: "（玉）入れをする。" },
   { kanji: "金", yomi: "きん", sentence: "（金）メダルをとる。" },
   { kanji: "九", yomi: "く", sentence: "（九）がつになる。" },
@@ -31,7 +31,7 @@ const kanjiList = [
   { kanji: "四", yomi: "よん", sentence: "（四）ひきのねこ。" },
   { kanji: "糸", yomi: "いと", sentence: "（糸）をとおす。" },
   { kanji: "字", yomi: "じ", sentence: "きれいな（字）をかく。" },
-  { kanji: "耳", yomi: "みみ", sentence: "（耳）ですませる。" },
+  { kanji: "耳", yomi: "みみ", sentence: "（耳）ですます。" },
   { kanji: "七", yomi: "なな", sentence: "（七）色の虹。" },
   { kanji: "車", yomi: "くるま", sentence: "（車）にのる。" },
   { kanji: "手", yomi: "て", sentence: "（手）をあらう。" },
@@ -59,7 +59,7 @@ const kanjiList = [
   { kanji: "大", yomi: "だい", sentence: "（大）すきです。" },
   { kanji: "男", yomi: "おとこ", sentence: "（男）のこのこ。" },
   { kanji: "竹", yomi: "たけ", sentence: "（竹）うま。" },
-  { kanji: "中", yomi: "なか", sentence: "はこ（中）。" },
+  { kanji: "中", yomi: "なか", sentence: "はこの（中）。" },
   { kanji: "虫", yomi: "むし", sentence: "（虫）とり。" },
   { kanji: "町", yomi: "まち", sentence: "となりの（町）。" },
   { kanji: "天", yomi: "てん", sentence: "（天）きがいい。" },
@@ -67,17 +67,17 @@ const kanjiList = [
   { kanji: "土", yomi: "つち", sentence: "（土）あそび。" },
   { kanji: "二", yomi: "に", sentence: "（二）じゅうえん。" },
   { kanji: "日", yomi: "ひ", sentence: "あさ（日）。" },
-  { kanji: "入", "yomi": "はい", "sentence": "おふろに（入）る。" },
-  { kanji: "年", "yomi": "とし", "sentence": "お（年）だま。" },
-  { kanji: "白", "yomi": "しろ", "sentence": "（白）いかみ。" },
-  { kanji: "八", "yomi": "はち", "sentence": "（八）にん家族。" },
-  { kanji: "百", "yomi": "ひゃく", "sentence": "（百）点まんてん。" },
-  { kanji: "文", "yomi": "ぶん", "sentence": "さく（文）。" },
-  { kanji: "木", "yomi": "き", "sentence": "（木）にのぼる。" },
-  { kanji: "本", "yomi": "ほん", "sentence": "（本）をよむ。" },
-  { kanji: "名", "yomi": "な", "sentence": "お（名）まえ。" },
-  { kanji: "目", "yomi": "め", "sentence": "（目）をあける。" },
-  { kanji: "立", "yomi": "たつ", "sentence": "（立）ってください。" },
+  { kanji: "入", yomi: "はい", sentence: "おふろに（入）る。" },
+  { kanji: "年", yomi: "とし", sentence: "お（年）だま。" },
+  { kanji: "白", yomi: "しろ", sentence: "（白）いかみ。" },
+  { kanji: "八", yomi: "はち", sentence: "（八）にん家族。" },
+  { kanji: "百", yomi: "ひゃく", sentence: "（百）点まんてん。" },
+  { kanji: "文", yomi: "ぶん", sentence: "さく（文）。" },
+  { kanji: "木", yomi: "き", sentence: "（木）にのぼる。" },
+  { kanji: "本", yomi: "ほん", sentence: "（本）をよむ。" },
+  { kanji: "名", yomi: "な", sentence: "お（名）まえ。" },
+  { kanji: "目", yomi: "め", sentence: "（目）をあける。" },
+  { kanji: "立", "yomi": "た", "sentence": "（立）ってください。" }, // 「た」に修正
   { kanji: "力", "yomi": "ちから", "sentence": "（力）もち。" },
   { kanji: "林", "yomi": "はやし", "sentence": "こ（林）をあるく。" },
   { kanji: "六", "yomi": "ろく", "sentence": "（六）にん家族。" },
@@ -108,7 +108,7 @@ function App() {
     if (ans === q.yomi) {
       setIsCorrect(true);
       setScore(s => s + 1);
-      setTimeout(nextQuestion, 300);
+      setTimeout(nextQuestion, 400);
     } else {
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
