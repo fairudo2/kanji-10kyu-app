@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ（ネタバレ防止・修正済み）
+// 漢検10級全80文字データ（読み・例文をすべて修正・ネタバレなし版）
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　（　）こ　ある。" },
@@ -32,7 +32,7 @@ const kanjiList = [
   { kanji: "川", yomi: "かわ", sentence: "（　）で　およぐ。" },
   { kanji: "田", yomi: "た", sentence: "（　）んぼに　いく。" },
   { kanji: "石", yomi: "いし", sentence: "（　）を　ひろう。" },
-  { kanji: "花", yomi: "花", sentence: "きれいな　（　）が　さく。" },
+  { kanji: "花", yomi: "はな", sentence: "きれいな　（　）が　さく。" },
   { kanji: "草", yomi: "くさ", sentence: "（　）を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "（　）の中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "（　）に　いく。" },
@@ -83,22 +83,12 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "（　）が　ふってきた。" }
 ];
 
-// 表示が安定している画像URL（公式系アセット）
-const mcCharacters = [
-  { name: "スティーブ", img: "https://www.minecraft.net/content/dam/archive/c7c7f7634f664a781373510523a7895f/Steve.png", color: "#2dcedf" },
-  { name: "クリーパー", img: "https://paimon.moe/images/creeper.png", color: "#4caf50" }, // 安定した予備URL
-  { name: "アレックス", img: "https://www.minecraft.net/content/dam/archive/47b4d18721993427181f72746401083a/Alex.png", color: "#ff9800" },
-  { name: "エンダーマン", img: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/1/18/Enderman_JE3_BE2.png", color: "#212121" },
-  { name: "ぶた", img: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/c1/Pig_JE3_BE2.png", color: "#f48fb1" }
-];
-
 function App() {
   const [shuffledList, setShuffledList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [choices, setChoices] = useState([]);
   const [isCorrect, setIsCorrect] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
-  const [rewardChar, setRewardChar] = useState(null);
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -120,7 +110,6 @@ function App() {
     setShuffledList(list);
     setCurrentIndex(0);
     setIsFinished(false);
-    setRewardChar(null);
     makeChoices(list[0]);
   };
 
@@ -134,7 +123,7 @@ function App() {
   };
 
   const handleAnswer = (ans) => {
-    if (isCorrect !== null || rewardChar || isFinished) return;
+    if (isCorrect !== null || isFinished) return;
     const currentQ = shuffledList[currentIndex];
     
     if (ans === currentQ.yomi) {
@@ -142,10 +131,7 @@ function App() {
       setIsCorrect(true);
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < shuffledList.length) {
-          setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
-          setIsCorrect(null);
-        } else if (nextIdx < shuffledList.length) {
+        if (nextIdx < shuffledList.length) {
           setCurrentIndex(nextIdx);
           makeChoices(shuffledList[nextIdx]);
           setIsCorrect(null);
@@ -160,41 +146,23 @@ function App() {
     }
   };
 
-  if (rewardChar) {
-    return (
-      <div className="kanji-container reward-view">
-        <div className="card reward-card" style={{borderColor: rewardChar.color}}>
-          <div className="mc-title">🎉 なかまに　なった！ 🎉</div>
-          <div className="mc-img-box">
-            {/* onerrorで画像がでない時に文字をだす保険 */}
-            <img src={rewardChar.img} alt={rewardChar.name} className="mc-img" onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.parentNode.innerHTML = `<div style="font-size:5rem">${rewardChar.name === 'クリーパー' ? '💣' : '👤'}</div>`;
-            }} />
-          </div>
-          <div className="mc-name">{rewardChar.name}</div>
-          <button onClick={() => {
-            const nextIdx = currentIndex + 1;
-            setCurrentIndex(nextIdx);
-            makeChoices(shuffledList[nextIdx]);
-            setRewardChar(null);
-          }} className="btn-mc">つぎへ！</button>
-        </div>
-      </div>
-    );
-  }
-
   if (isFinished) {
     return (
       <div className="kanji-container finish-view">
         <div className="card finish-card">
           <div className="finish-title">👑 ぜんもんクリア！ 👑</div>
-          <div className="mc-img-box dragon">
-            <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/4c/Ender_Dragon_JE2_BE2.png" alt="ドラゴン" className="mc-img" />
-          </div>
-          <p className="finish-message">80この　かんじを　マスターしたね！<br/>キミは　さいきょうの　マイクラマスターだ！</p>
-          <button onClick={startQuiz} className="btn-restart">もういちど　やる</button>
+          <div className="finish-icon">🏆🌸✨</div>
+          <p className="finish-message">80この　かんじを<br/>ぜーんぶ　マスターしたね！<br/>ほんとうに　すごい！</p>
+          <button onClick={startQuiz} className="btn-restart">はじめから　やる</button>
         </div>
+        <style>{`
+          .finish-view { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); }
+          .finish-card { border: 8px solid #ffd700; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
+          .finish-title { font-size: 2.2rem; color: #ff69b4; font-weight: bold; margin-bottom: 20px; }
+          .finish-icon { font-size: 6rem; margin: 25px 0; animation: bounce 2s infinite; }
+          .btn-restart { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); box-shadow: 0 6px 0 #89b0e5; width: 80%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 20px; }
+          @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        `}</style>
       </div>
     );
   }
@@ -214,7 +182,9 @@ function App() {
         <div className="sentence">{q.sentence}</div>
         <div className="choices">
           {choices.map((c, i) => (
-            <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
+            <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>
+              {c}
+            </button>
           ))}
         </div>
       </div>
@@ -238,16 +208,6 @@ function App() {
         .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
         .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; z-index: 100; pointer-events: none; }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-        /* マイクラ画面用スタイル */
-        .reward-view { background: #1e1e1e !important; }
-        .reward-card { border: 10px solid; background: white !important; border-radius: 0 !important; max-width: 400px; padding: 40px 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
-        .mc-title { font-size: 2rem; color: #333; font-weight: bold; margin-bottom: 30px; }
-        .mc-img-box { width: 100%; min-height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
-        .mc-img { max-width: 100%; max-height: 250px; }
-        .mc-name { font-size: 2.2rem; font-weight: bold; color: #333; margin-bottom: 35px; }
-        .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 15px 30px; font-size: 1.6rem; font-weight: bold; cursor: pointer; border-radius: 0; width: 100%; box-shadow: 6px 6px 0 #1b5e20; }
-        .finish-view { background: #2c3e50 !important; }
-        .finish-card { border: 8px solid #ffd700; border-radius: 10px !important; }
       `}</style>
     </div>
   );
