@@ -4,17 +4,15 @@ import React, { useState } from 'react';
 const KANJI_80 = "一二三四五六七八九十百千上下左右中大小月日火水木金土山川田石花草林森竹虫貝犬足手目耳口力人子女男名正生立休出入見音学校文字早夕空気天赤青白糸車町村王玉円先年雨".split("");
 
 /**
- * 【完全版】漢字ストロークデータ
- * フォントを使わず、すべての線を座標(path)で描画します。
- * base: グレーで表示する全画数の線
- * これにより、赤線とのズレは物理的に発生しません。
+ * 【完全版】漢字ストロークデータ (SVGパス)
+ * 配列の順番がそのまま「書き順（1画目, 2画目...）」になっています。
  */
 const KANJI_PATHS = {
-  // --- 数字・基本 ---
+  // --- 数字 ---
   "一": ["M15,50 H85"],
   "二": ["M25,35 H75", "M15,65 H85"],
   "三": ["M25,30 H75", "M30,50 H70", "M15,70 H85"],
-  "四": ["M20,15 V85", "M20,15 H80 V85", "M35,35 Q30,60 50,60", "M20,85 H80"], // 儿の形を調整
+  "四": ["M20,15 V85", "M20,15 H80 V85", "M40,40 L30,60", "M55,35 V60 H70", "M20,85 H80"], // 内部を2画に分離
   "五": ["M25,25 H75", "M50,25 V55", "M50,55 H25 V85", "M15,85 H85"],
   "六": ["M50,15 V30", "M15,40 H85", "M40,55 L25,80", "M60,55 L75,80"],
   "七": ["M15,45 H85", "M50,15 V70 Q50,90 85,80"],
@@ -25,7 +23,7 @@ const KANJI_PATHS = {
   // --- 修正対象（田・金・耳など） ---
   "田": [
     "M25,20 V80",         // 1. 左縦
-    "M25,20 H75 V80",     // 2. 上〜右縦（角を繋げる）
+    "M25,20 H75 V80",     // 2. 上〜右縦（角）
     "M50,20 V80",         // 3. 中縦
     "M25,50 H75",         // 4. 中横
     "M25,80 H75"          // 5. 下横
@@ -79,7 +77,7 @@ const KANJI_PATHS = {
     "M65,35 L70,45"       // 8
   ],
   
-  // --- その他の文字（汎用パターン） ---
+  // --- その他汎用 ---
   "土": ["M30,40 H70", "M50,20 V85", "M15,85 H85"],
   "円": ["M25,20 V85", "M25,20 H75 V85", "M50,20 V50", "M50,50 H75", "M25,85 H75"],
   "月": ["M30,15 V85 Q25,75 20,65", "M30,15 H70 V85 Q70,95 60,90", "M30,40 H70", "M30,60 H70"],
@@ -87,12 +85,6 @@ const KANJI_PATHS = {
   "白": ["M50,10 Q40,25 30,35", "M25,35 V80", "M25,35 H75 V80", "M25,55 H75", "M25,80 H75"],
   "口": ["M25,25 V75", "M25,25 H75 V75", "M25,75 H75"],
   "目": ["M25,20 V85", "M25,20 H75 V85", "M25,40 H75", "M25,60 H75", "M25,85 H75"],
-};
-
-// 筆順の正解データ（何番目の線か：1始まり）
-const STROKE_ANSWERS = {
-  "田": 3, "金": 3, "右": 1, "左": 1, "耳": 6, "王": 3, "雨": 4, 
-  "四": 2, "五": 2, "六": 4, "七": 1, "八": 2, "九": 1, "十": 1
 };
 
 function App() {
@@ -109,17 +101,17 @@ function App() {
     const chars = KANJI_80.slice(startIdx, startIdx + 10);
     
     const newQuestions = chars.map((k) => {
-      // 登録がない文字はデフォルトの四角を表示（エラー防止）
+      // パスデータがない場合は四角形を表示（エラー回避）
       const paths = KANJI_PATHS[k] || ["M20,20 V80 H80 V20 Z", "M20,50 H80", "M50,20 V80"];
       
       let ansStr = "1";
       let targetIndex = 0;
 
       if (m === 2) {
-        // 筆順: 正解データがあればそれを使う、なければランダム
-        const correctStroke = STROKE_ANSWERS[k] || Math.floor(Math.random() * Math.min(paths.length, 3)) + 1;
-        ansStr = correctStroke.toString();
-        targetIndex = correctStroke - 1;
+        // 【修正点】ここで「ランダムに線を選ぶ」そして「その選んだ線（index+1）を答えにする」
+        // これで問題と答えが必ず一致します。
+        targetIndex = Math.floor(Math.random() * paths.length);
+        ansStr = (targetIndex + 1).toString();
       } else {
         ansStr = m === 4 ? k : "よみ";
       }
@@ -127,7 +119,7 @@ function App() {
       return {
         kanji: k,
         ans: ansStr,
-        paths: paths,          // すべての線データ
+        paths: paths,          // 描画する全ストローク
         target: targetIndex,   // 赤くする線のインデックス
         sentence: m === 1 ? "（　）の　かんじを　よもう。" : 
                   m === 2 ? "あかい　せんは　なんばんめ？" :
@@ -146,6 +138,8 @@ function App() {
   const generateChoices = (q, m) => {
     let c = [];
     if (m === 2) { 
+      // 筆順：正解以外の数字をランダムに選ぶ
+      // 誤答候補：1〜6の中から正解を除いたもの
       const nums = ["1", "2", "3", "4", "5", "6"].filter(n => n !== q.ans);
       c = nums.sort(() => Math.random() - 0.5).slice(0, 2);
     } else if (m === 4) { 
@@ -155,6 +149,7 @@ function App() {
       const yomis = ["いち", "なか", "やま", "ひと", "はな"].sort(() => Math.random() - 0.5).slice(0, 2);
       c = yomis;
     }
+    // 正解(q.ans)と誤答(c)を混ぜる
     setChoices([q.ans, ...c].sort(() => Math.random() - 0.5));
   };
 
@@ -225,7 +220,6 @@ function App() {
                 ))}
               </svg>
             ) : (
-              // 筆順以外は普通にフォントで表示
               <div className="kanji-txt">{questions[idx].kanji}</div>
             )}
           </div>
@@ -266,10 +260,8 @@ function App() {
           display: flex; justify-content: center; align-items: center;
         }
         
-        /* フォント表示用（読み・書き問題） */
         .kanji-txt { font-size: 9rem; color: #ff8c00; font-family: 'Kiwi Maru', serif; }
         
-        /* SVG表示用（筆順問題） */
         .kanji-svg { width: 180px; height: 180px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
         .stroke-gray { stroke: #d0d0d0; stroke-width: 10; }
         .stroke-red { stroke: #ff4757; stroke-width: 12; animation: blink 1s infinite; }
