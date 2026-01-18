@@ -91,7 +91,36 @@ function App() {
   const [isCorrect, setIsCorrect] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
 
-  // 選択肢の重複チェック用
+  // 音を出すための設定
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const playCorrectSound = () => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // ラ(A5)
+    osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1); // ミ(E6)
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+  };
+
+  const playIncorrectSound = () => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+  };
+
   const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
 
   const startQuiz = () => {
@@ -107,7 +136,6 @@ function App() {
   const makeChoices = (question) => {
     if (!question) return;
     const correctYomi = question.yomi;
-    // 正解以外の読みからランダムに2つ選ぶ
     const otherYomis = allYomis
       .filter(y => y !== correctYomi)
       .sort(() => Math.random() - 0.5)
@@ -118,6 +146,7 @@ function App() {
   const handleAnswer = (ans) => {
     const currentQ = shuffledList[currentIndex];
     if (ans === currentQ.yomi) {
+      playCorrectSound(); // 正解音！
       setIsCorrect(true);
       setTimeout(() => {
         if (currentIndex + 1 < shuffledList.length) {
@@ -130,6 +159,7 @@ function App() {
         }
       }, 500);
     } else {
+      playIncorrectSound(); // 不正解音…
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
     }
