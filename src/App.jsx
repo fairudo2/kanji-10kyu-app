@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 1年生の漢字80文字データ
+// 漢検10級（1年生）全80文字データ
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "りんごが（一）ごある。" },
   { kanji: "右", yomi: "みぎ", sentence: "（右）の手をあげる。" },
@@ -17,12 +17,71 @@ const kanjiList = [
   { kanji: "休", yomi: "きゅう", sentence: "（休）みのひ。" },
   { kanji: "玉", yomi: "たま", sentence: "（玉）入れをする。" },
   { kanji: "金", yomi: "きん", sentence: "（金）メダルをとる。" },
-  { kanji: "九", yomi: "きゅう", sentence: "（九）がつになる。" },
+  { kanji: "九", yomi: "く", sentence: "（九）がつになる。" }, // ← ここを「く」に修正しました
   { kanji: "空", yomi: "そら", sentence: "（空）が青い。" },
   { kanji: "月", yomi: "つき", sentence: "お（月）さまが出る。" },
   { kanji: "犬", yomi: "いぬ", sentence: "（犬）がほえる。" },
-  { kanji: "見", yomi: "み", sentence: "ゆめを（見）る。" }
-  // ※文字数はいつでも増やせます
+  { kanji: "見", yomi: "み", sentence: "ゆめを（見）る。" },
+  { kanji: "口", yomi: "くち", sentence: "（口）を大きくあける。" },
+  { kanji: "校", "yomi": "こう", "sentence": "（校）ていではしる。" },
+  { kanji: "左", "yomi": "ひだり", "sentence": "（左）をむく。" },
+  { kanji: "三", "yomi": "さん", "sentence": "（三）にんのこども。" },
+  { kanji: "山", "yomi": "やま", "sentence": "（山）にのぼる。" },
+  { kanji: "子", "yomi": "こ", "sentence": "（子）いぬがくる。" },
+  { kanji: "四", "yomi": "よん", "sentence": "（四）ひきのねこ。" },
+  { kanji: "糸", "yomi: "いと", "sentence": "（糸）をとおす。" },
+  { kanji: "字", "yomi": "じ", "sentence": "きれいな（字）をかく。" },
+  { kanji: "耳", "yomi": "みみ", "sentence": "（耳）ですませる。" },
+  { kanji: "七", "yomi": "なな", "sentence": "（七）色の虹。" },
+  { kanji: "車", "yomi": "くるま", "sentence": "（車）にのる。" },
+  { kanji: "手", "yomi": "て", "sentence": "（手）をあらう。" },
+  { kanji: "十", "yomi": "じゅう", "sentence": "（十）円だま。" },
+  { kanji: "出", "yomi": "で", "sentence": "おもてに（出）る。" },
+  { kanji: "女", "yomi": "おんな", "sentence": "（女）のこのこ。" },
+  { kanji: "小", "yomi": "しょう", "sentence": "（小）がっこう。" },
+  { kanji: "上", "yomi": "うえ", "sentence": "（上）をむく。" },
+  { kanji: "森", "yomi": "もり", "sentence": "（森）のなか。" },
+  { kanji: "人", "yomi": "ひと", "sentence": "（人）があつまる。" },
+  { kanji: "水", "yomi": "みず", "sentence": "（水）をのむ。" },
+  { kanji: "正", "yomi": "せい", "sentence": "（正）かいです。" },
+  { kanji: "生", "yomi": "せい", "sentence": "１年（生）。" },
+  { kanji: "青", "yomi": "あお", "sentence": "（青）いそら。" },
+  { kanji: "夕", "yomi": "ゆう", "sentence": "（夕）やけこやけ。" },
+  { kanji: "石", "yomi": "いし", "sentence": "（石）をなげる。" },
+  { kanji: "赤", "yomi": "あか", "sentence": "（赤）いりんご。" },
+  { kanji: "千", "yomi": "せん", "sentence": "（千）円さつ。" },
+  { kanji: "川", "yomi": "かわ", "sentence": "（川）でおよぐ。" },
+  { kanji: "先", "yomi": "せん", "sentence": "お（先）にどうぞ。" },
+  { kanji: "早", "yomi": "はや", "sentence": "お（早）よう。" },
+  { kanji: "草", "yomi": "くさ", "sentence": "（草）をむしる。" },
+  { kanji: "足", "yomi": "あし", "sentence": "（足）がはやい。" },
+  { kanji: "村", "yomi": "むら", "sentence": "（村）のまつり。" },
+  { kanji: "大", "yomi": "だい", "sentence": "（大）すきです。" },
+  { kanji: "男", "yomi": "おとこ", "sentence": "（男）のこのこ。" },
+  { kanji: "竹", "yomi": "たけ", "sentence": "（竹）うま。" },
+  { kanji: "中", "yomi": "なか", "sentence": "はこ（中）。" },
+  { kanji: "虫", "yomi": "むし", "sentence": "（虫）とり。" },
+  { kanji: "町", "yomi": "まち", "sentence": "となりの（町）。" },
+  { kanji: "天", "yomi": "てん", "sentence": "（天）きがいい。" },
+  { kanji: "田", "yomi": "た", "sentence": "（田）んぼ。" },
+  { kanji: "土", "yomi": "つち", "sentence": "（土）あそび。" },
+  { kanji: "二", "yomi": "に", "sentence": "（二）じゅうえん。" },
+  { kanji: "日", "yomi": "ひ", "sentence": "あさ（日）。" },
+  { kanji: "入", "yomi": "はい", "sentence": "おふろに（入）る。" },
+  { kanji: "年", "yomi": "とし", "sentence": "お（年）だま。" },
+  { kanji: "白", "yomi": "しろ", "sentence": "（白）いかみ。" },
+  { kanji: "八", "yomi": "はち", "sentence": "（八）にん家族。" },
+  { kanji: "百", "yomi": "ひゃく", "sentence": "（百）点まんてん。" },
+  { kanji: "文", "yomi": "ぶん", "sentence": "さく（文）。" },
+  { kanji: "木", "yomi": "き", "sentence": "（木）にのぼる。" },
+  { kanji: "本", "yomi": "ほん", "sentence": "（本）をよむ。" },
+  { kanji: "名", "yomi": "な", "sentence": "お（名）まえ。" },
+  { kanji: "目", "yomi": "め", "sentence": "（目）をあける。" },
+  { kanji: "立", "yomi": "たつ", "sentence": "（立）ってください。" },
+  { kanji: "力", "yomi": "ちから", "sentence": "（力）もち。" },
+  { kanji: "林", "yomi": "はやし", "sentence": "こ（林）をあるく。" },
+  { kanji: "六", "yomi": "ろく", "sentence": "（六）にん家族。" },
+  { kanji: "五", "yomi": "ご", "sentence": "（五）にんのこども。" }
 ];
 
 function App() {
@@ -34,7 +93,6 @@ function App() {
   const nextQuestion = () => {
     const nextQ = kanjiList[Math.floor(Math.random() * kanjiList.length)];
     setQ(nextQ);
-    // 間違いの選択肢をランダムに作る
     const wrong = kanjiList
       .filter(item => item.yomi !== nextQ.yomi)
       .sort(() => 0.5 - Math.random())
@@ -50,7 +108,7 @@ function App() {
     if (ans === q.yomi) {
       setIsCorrect(true);
       setScore(s => s + 1);
-      setTimeout(nextQuestion, 500); // 0.5秒で次へ
+      setTimeout(nextQuestion, 300); // 爆速で次へ移る
     } else {
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
@@ -85,7 +143,7 @@ function App() {
         .kanji-box { font-size: 8rem; font-weight: bold; background: #fff1b8; border-radius: 20px; margin-bottom: 20px; color: #333; }
         .sentence { font-size: 1.4rem; color: #555; margin-bottom: 30px; min-height: 3rem; }
         .choices { display: grid; gap: 15px; }
-        button { padding: 18px; font-size: 1.6rem; border: none; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        button { padding: 18px; font-size: 1.6rem; border: none; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 0 rgba(0,0,0,0.1); cursor: pointer; }
         .btn-0 { background: #ff7875; } .btn-1 { background: #69c0ff; } .btn-2 { background: #95de64; }
         .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: bold; z-index: 100; pointer-events: none; }
         .ok { color: #f5222d; } .ng { color: #2f54eb; }
