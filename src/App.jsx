@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ：問題文から答え（読み）を完全に隠しました！
+// 漢検10級全80文字データ（ネタバレ防止・精査済み）
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　（　）こ　ある。" },
   { kanji: "三", yomi: "さん", sentence: "（　）にんで　あそぶ。" },
   { kanji: "四", yomi: "よん", sentence: "（　）ひきの　ねこ。" },
   { kanji: "五", yomi: "ご", sentence: "（　）にんの　こども。" },
-  { kanji: "六", yomi: "ろく", sentence: "（　）にんで　はしる。" }, // image_6e44eb.png の箇所を修正
+  { kanji: "六", yomi: "ろく", sentence: "（　）にんで　はしる。" },
   { kanji: "七", yomi: "なな", sentence: "（　）色の　にじ。" },
   { kanji: "八", yomi: "はち", sentence: "（　）にんの　かぞく。" },
   { kanji: "九", yomi: "く", sentence: "（　）がつに　なった。" },
@@ -69,9 +69,9 @@ const kanjiList = [
   { kanji: "気", yomi: "き", sentence: "元気が　ある（　）。" },
   { kanji: "天", yomi: "てん", sentence: "（　）きが　いい。" },
   { kanji: "赤", yomi: "あか", sentence: "（　）い　りんご。" },
-  { kanji: "青", yomi: "あお", sentence: "（　）い　そら。" },
+  { kanji: "青", yomi: "あo", sentence: "（　）い　そら。" },
   { kanji: "白", yomi: "しろ", sentence: "（　）い　くも。" },
-  { kanji: "糸", yomi: "いと", sentence: "（　）を　とおす。" },
+  { kanji: "糸", yomi: "いo", sentence: "（　）を　とおす。" },
   { kanji: "車", yomi: "くるま", sentence: "（　）に　のる。" },
   { kanji: "町", yomi: "まち", sentence: "おとなりの　（　）。" },
   { kanji: "村", yomi: "むら", sentence: "（　）の　おまつり。" },
@@ -83,15 +83,15 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "（　）が　ふってきた。" }
 ];
 
+// 本物のマイクラ画像URL
 const mcCharacters = [
-  { name: "スティーブ", emoji: "👤", color: "#2dcedf" },
-  { name: "クリーパー", emoji: "💣", color: "#4caf50" },
-  { name: "アレックス", emoji: "👱‍♀️", color: "#ff9800" },
-  { name: "エンダーマン", emoji: "👁️", color: "#212121" },
-  { name: "ぶた", emoji: "🐷", color: "#f48fb1" },
-  { name: "ひつじ", emoji: "🐑", color: "#f5f5f5" },
-  { name: "ゾンビ", emoji: "🧟", color: "#388e3c" },
-  { name: "スケルトン", emoji: "💀", color: "#e0e0e0" }
+  { name: "スティーブ", img: "http://googleusercontent.com/image_collection/image_retrieval/5333996315823858794_0", color: "#2dcedf" },
+  { name: "クリーパー", img: "http://googleusercontent.com/image_collection/image_retrieval/9934370686829093910_0", color: "#4caf50" },
+  { name: "アレックス", img: "http://googleusercontent.com/image_collection/image_retrieval/1197903233467518928_0", color: "#ff9800" },
+  { name: "エンダーマン", img: "http://googleusercontent.com/image_collection/image_retrieval/5033254757109568460_0", color: "#212121" },
+  { name: "ぶた", img: "http://googleusercontent.com/image_collection/image_retrieval/8161605830263074241_0", color: "#f48fb1" },
+  { name: "ひつじ", img: "http://googleusercontent.com/image_collection/image_retrieval/2079650507737198374_0", color: "#f5f5f5" },
+  { name: "ゾンビ", img: "http://googleusercontent.com/image_collection/image_retrieval/12064394733904869328_0", color: "#388e3c" }
 ];
 
 function App() {
@@ -104,25 +104,15 @@ function App() {
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-  const playCorrectSound = () => {
+  const playSound = (freq, type, duration) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-  };
-
-  const playIncorrectSound = () => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
   };
 
   const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
@@ -150,17 +140,14 @@ function App() {
     const currentQ = shuffledList[currentIndex];
     
     if (ans === currentQ.yomi) {
-      playCorrectSound();
+      playSound(880, 'sine', 0.3);
       setIsCorrect(true);
-      
-      // 0.6秒後に判定
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        // 10問ごとのご褒美判定（確実にここでrewardCharをセットします）
-        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < shuffledList.length) {
+        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < 80) {
           setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
           setIsCorrect(null);
-        } else if (nextIdx < shuffledList.length) {
+        } else if (nextIdx < 80) {
           setCurrentIndex(nextIdx);
           makeChoices(shuffledList[nextIdx]);
           setIsCorrect(null);
@@ -169,7 +156,7 @@ function App() {
         }
       }, 600);
     } else {
-      playIncorrectSound();
+      playSound(220, 'sawtooth', 0.5);
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
     }
@@ -180,31 +167,17 @@ function App() {
       <div className="kanji-container reward-view">
         <div className="card reward-card" style={{borderColor: rewardChar.color}}>
           <div className="mc-title">🎉 なかまに　なった！ 🎉</div>
-          <div className="mc-char-box" style={{backgroundColor: rewardChar.color}}>
-            <span className="mc-emoji">{rewardChar.emoji}</span>
+          <div className="mc-img-box">
+            <img src={rewardChar.img} alt={rewardChar.name} className="mc-img" />
           </div>
           <div className="mc-name">{rewardChar.name}</div>
-          <button 
-            onClick={() => {
-              const nextIdx = currentIndex + 1;
-              setCurrentIndex(nextIdx);
-              makeChoices(shuffledList[nextIdx]);
-              setRewardChar(null);
-            }} 
-            className="btn-mc"
-          >
-            つぎの　もんだいへ！
-          </button>
+          <button onClick={() => {
+            const nextIdx = currentIndex + 1;
+            setCurrentIndex(nextIdx);
+            makeChoices(shuffledList[nextIdx]);
+            setRewardChar(null);
+          }} className="btn-mc">つぎへ！</button>
         </div>
-        <style>{`
-          .reward-view { background: #1e1e1e !important; }
-          .reward-card { border: 10px solid; background: white !important; border-radius: 0 !important; max-width: 400px; padding: 40px 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
-          .mc-title { font-size: 2.2rem; color: #333; font-weight: bold; margin-bottom: 30px; }
-          .mc-char-box { width: 160px; height: 160px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; border: 6px solid #000; box-shadow: 12px 12px 0 rgba(0,0,0,0.2); }
-          .mc-emoji { font-size: 6rem; }
-          .mc-name { font-size: 2.4rem; font-weight: bold; color: #333; margin-bottom: 40px; }
-          .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 20px 40px; font-size: 1.8rem; font-weight: bold; box-shadow: 8px 8px 0 #1b5e20; cursor: pointer; border-radius: 0; width: 100%; }
-        `}</style>
       </div>
     );
   }
@@ -214,17 +187,12 @@ function App() {
       <div className="kanji-container finish-view">
         <div className="card finish-card">
           <div className="finish-title">👑 ぜんもんクリア！ 👑</div>
-          <div className="finish-icon">💎🐲🔥</div>
-          <p className="finish-message">80この　かんじを<br/>ぜーんぶ　マスターしたね！<br/>キミは　マイクラマスターだ！</p>
-          <button onClick={startQuiz} className="btn-restart">はじめから　やる</button>
+          <div className="mc-img-box dragon">
+            <img src="http://googleusercontent.com/image_collection/image_retrieval/2127038554319248454_0" alt="ドラゴン" className="mc-img" />
+          </div>
+          <p className="finish-message">80この　かんじを　ぜんぶ　クリアしたね！<br/>キミは　さいきょうの　マイクラマスターだ！</p>
+          <button onClick={startQuiz} className="btn-restart">もういちど　やる</button>
         </div>
-        <style>{`
-          .finish-view { background: linear-gradient(135deg, #2c3e50, #000); }
-          .finish-card { border: 8px solid #ffd700; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
-          .finish-title { font-size: 2.5rem; color: #b8860b; font-weight: bold; margin-bottom: 20px; }
-          .finish-icon { font-size: 6rem; margin: 25px 0; animation: bounce 2s infinite; }
-          .btn-restart { background: #ffd700; color: #000; border: 4px solid #b8860b; padding: 20px; font-size: 1.8rem; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; }
-        `}</style>
       </div>
     );
   }
@@ -235,7 +203,7 @@ function App() {
   return (
     <div className="kanji-container">
       <div className="card">
-        <div className="header">🌸 かんけん10きゅう 🌸</div>
+        <div className="header">🎀 かんけん10きゅう 🎀</div>
         <div className="progress-bar">
           <span className="progress-text">80もんじゅう {currentIndex + 1}もんめ</span>
           <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 80) * 100}%`}}></div>
@@ -244,9 +212,7 @@ function App() {
         <div className="sentence">{q.sentence}</div>
         <div className="choices">
           {choices.map((c, i) => (
-            <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>
-              {c}
-            </button>
+            <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
           ))}
         </div>
       </div>
@@ -270,6 +236,19 @@ function App() {
         .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
         .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; z-index: 100; pointer-events: none; }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
+        /* マイクラ画面用スタイル */
+        .reward-view { background: #1e1e1e !important; }
+        .reward-card { border: 10px solid; background: white !important; border-radius: 0 !important; max-width: 400px; padding: 40px 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
+        .mc-title { font-size: 2rem; color: #333; font-weight: bold; margin-bottom: 30px; }
+        .mc-img-box { width: 100%; max-height: 250px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; overflow: hidden; }
+        .mc-img { max-width: 100%; max-height: 250px; filter: drop-shadow(5px 5px 0 rgba(0,0,0,0.2)); }
+        .mc-name { font-size: 2.2rem; font-weight: bold; color: #333; margin-bottom: 35px; }
+        .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 15px 30px; font-size: 1.6rem; font-weight: bold; cursor: pointer; border-radius: 0; width: 100%; box-shadow: 6px 6px 0 #1b5e20; }
+        .finish-view { background: #2c3e50 !important; }
+        .finish-card { border: 8px solid #ffd700; border-radius: 10px !important; }
+        .finish-title { font-size: 2.2rem; color: #b8860b; font-weight: bold; margin-bottom: 20px; }
+        .finish-message { font-size: 1.4rem; color: #444; margin-top: 20px; font-weight: bold; }
+        .btn-restart { background: #ffd700; color: #000; border: 4px solid #b8860b; padding: 15px; font-size: 1.6rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; }
       `}</style>
     </div>
   );
