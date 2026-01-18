@@ -1,310 +1,134 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ（変更なし）
-const kanjiList = [
-  { kanji: "一", yomi: "いち", sentence: "一（　）ねんせいに　なる。" },
-  { kanji: "二", yomi: "に", sentence: "みかんが　二（　）こ　ある。" },
-  { kanji: "三", yomi: "さん", sentence: "三（　）にんで　あそぶ。" },
-  { kanji: "四", yomi: "よん", sentence: "四（　）ひきの　ねこ。" },
-  { kanji: "五", yomi: "ご", sentence: "五（　）にんの　こども。" },
-  { kanji: "六", yomi: "ろく", sentence: "六（　）にんで　はしる。" },
-  { kanji: "七", yomi: "なな", sentence: "七（　）色の　にじ。" },
-  { kanji: "八", yomi: "はち", sentence: "八（　）にんの　かぞく。" },
-  { kanji: "九", yomi: "く", sentence: "九（　）がつに　なった。" },
-  { kanji: "十", yomi: "じゅう", sentence: "十（　）円だま。" },
-  { kanji: "百", yomi: "ひゃく", sentence: "百（　）点を　とった！" },
-  { kanji: "千", yomi: "せん", sentence: "千（　）円　もらった。" },
-  { kanji: "上", yomi: "うえ", sentence: "つくえの　上（　）を見る。" },
-  { kanji: "下", yomi: "した", sentence: "つくえの　下（　）を見る。" },
-  { kanji: "左", yomi: "ひだり", sentence: "左（　）に　まがる。" },
-  { kanji: "右", yomi: "みぎ", sentence: "右（　）の　て。" },
-  { kanji: "中", yomi: "なか", sentence: "はこの　中（　）を　見る。" },
-  { kanji: "大", yomi: "だい", sentence: "大（　）すきな　おやつ。" },
-  { kanji: "小", yomi: "しょう", sentence: "小（　）がっこうに　いく。" },
-  { kanji: "月", yomi: "つき", sentence: "お月（　）さまが　出る。" },
-  { kanji: "日", yomi: "ひ", sentence: "お日（　）さまが　のぼる。" },
-  { kanji: "火", yomi: "ひ", sentence: "火（　）が　もえている。" },
-  { kanji: "水", yomi: "みず", sentence: "水（　）を　のむ。" },
-  { kanji: "木", yomi: "き", sentence: "木（　）に　のぼる。" },
-  { kanji: "金", yomi: "きん", sentence: "金（　）メダルだ！" },
-  { kanji: "土", yomi: "つち", sentence: "土（　）あそびを　する。" },
-  { kanji: "山", yomi: "やま", sentence: "高い　山（　）に　のぼる。" },
-  { kanji: "川", yomi: "かわ", sentence: "川（　）で　およぐ。" },
-  { kanji: "田", yomi: "た", sentence: "田（　）んぼに　いく。" },
-  { kanji: "石", yomi: "いし", sentence: "石（　）を　ひろう。" },
-  { kanji: "花", yomi: "はな", sentence: "きれいな　花（　）が　さく。" },
-  { kanji: "草", yomi: "くさ", sentence: "草（　）を　むしる。" },
-  { kanji: "林", yomi: "はやし", sentence: "林（　）の中を　あるく。" },
-  { kanji: "森", yomi: "もり", sentence: "森（　）に　いく。" },
-  { kanji: "竹", yomi: "たけ", sentence: "竹（　）やぶが　ある。" },
-  { kanji: "虫", yomi: "むし", sentence: "虫（　）とりを　する。" },
-  { kanji: "貝", yomi: "かい", sentence: "うみで　貝（　）を　ひろう。" },
-  { kanji: "犬", yomi: "いぬ", sentence: "犬（　）が　ほえる。" },
-  { kanji: "足", yomi: "あし", sentence: "足（　）が　はやい。" },
-  { kanji: "手", yomi: "て", sentence: "手（　）を　あらう。" },
-  { kanji: "目", yomi: "め", sentence: "目（　）を　あける。" },
-  { kanji: "耳", yomi: "みみ", sentence: "耳（　）で　きく。" },
-  { kanji: "口", yomi: "くち", sentence: "口（　）を　大きく　あける。" },
-  { kanji: "力", yomi: "ちから", sentence: "力（　）もち。" },
-  { kanji: "人", yomi: "ひと", sentence: "人（　）が　あつまる。" },
-  { kanji: "子", yomi: "こ", sentence: "女の子（　）。" },
-  { kanji: "女", yomi: "おんな", sentence: "女（　）の　こ。" },
-  { kanji: "男", yomi: "おとこ", sentence: "男（　）の　こ。" },
-  { kanji: "名", yomi: "な", sentence: "お名（　）まえを　かく。" },
-  { kanji: "正", yomi: "せい", sentence: "正（　）かいです！" },
-  { kanji: "生", yomi: "せい", sentence: "一ねん生（　）。" },
-  { kanji: "立", yomi: "た", sentence: "立（　）ってください。" },
-  { kanji: "休", yomi: "やす", sentence: "休（　）みの　ひ。" },
-  { kanji: "出", yomi: "で", sentence: "おもてに　出（　）る。" },
-  { kanji: "入", yomi: "はい", sentence: "おふろに　入（　）る。" },
-  { kanji: "見", yomi: "み", sentence: "ゆめを　見（　）る。" },
-  { kanji: "音", yomi: "おと", sentence: "ピアノの　音（　）。" },
-  { kanji: "学", yomi: "がっ", sentence: "学（　）こうに　いく。" },
-  { kanji: "校", yomi: "こう", sentence: "がっ校（　）の　ていえん。" },
-  { kanji: "文", yomi: "ぶん", sentence: "さく文（　）を　かく。" },
-  { kanji: "字", yomi: "じ", sentence: "きれいな　字（　）。" },
-  { kanji: "早", yomi: "はや", sentence: "早（　）く　おきる。" },
-  { kanji: "夕", yomi: "ゆう", sentence: "夕（　）やけが　きれい。" },
-  { kanji: "空", yomi: "そら", sentence: "空（　）が　あおい。" },
-  { kanji: "気", yomi: "き", sentence: "元気が　ある（　）。" },
-  { kanji: "天", yomi: "てん", sentence: "天（　）きが　いい。" },
-  { kanji: "赤", yomi: "あか", sentence: "赤（　）い　りんご。" },
-  { kanji: "青", yomi: "あお", sentence: "青（　）い　そら。" },
-  { kanji: "白", yomi: "しろ", sentence: "白（　）い　くも。" },
-  { kanji: "糸", yomi: "いと", sentence: "糸（　）を　とおす。" },
-  { kanji: "車", yomi: "くるま", sentence: "車（　）に　のる。" },
-  { kanji: "町", yomi: "まち", sentence: "おとなりの　町（　）。" },
-  { kanji: "村", yomi: "むら", sentence: "村（　）の　おまつり。" },
-  { kanji: "王", yomi: "おう", sentence: "ライオンは　百じゅうの王（　）。" },
-  { kanji: "玉", yomi: "たま", sentence: "玉（　）いれを　する。" },
-  { kanji: "円", yomi: "えん", sentence: "百（　）だま。" },
-  { kanji: "先", yomi: "せん", sentence: "お先（　）に　どうぞ。" },
-  { kanji: "年", yomi: "とし", sentence: "お年（　）だま。" },
-  { kanji: "左", yomi: "ひだり", sentence: "左（　）を　むく。" },
-  { kanji: "雨", yomi: "あめ", sentence: "雨（　）が　ふってきた。" }
-];
+// 過去問の傾向に基づき、1年生が間違いやすい筆順を重点的に追加
+const stageData = {
+  1: [ // 大問1&3: よみ（文章題）
+    { k: "夕", a: "ゆう", s: "（　）がたに　なった。" },
+    { k: "赤", a: "あか", s: "（　）い　りんご。" },
+    { k: "一", a: "いち", s: "（　）ねんせい。" },
+    { k: "中", a: "なか", s: "バスの（　）。" },
+    { k: "花", a: "はな", s: "（　）の　なまえ。" },
+    { k: "月", a: "つき", s: "お（　）さまが　出る。" },
+    { k: "金", a: "かね", s: "お（　）を　ためる。" },
+    { k: "男", a: "おとこ", s: "（　）の　こ。" },
+    { k: "白", a: "しろ", s: "（　）い　くも。" },
+    { k: "入", a: "い", s: "おふろに（　）れる。" }
+  ],
+  2: [ // 大問2: かきじゅん（筆順） ※間違いやすい漢字を網羅
+    { k: "右", a: "1", s: "「右」の 最初（1画目）は どれ？（ななめだよ）" },
+    { k: "左", a: "1", s: "「左」の 最初（1画目）は どれ？（よこ棒だよ）" },
+    { k: "五", a: "2", s: "「五」の 2画目は どこ？（たて棒だよ）" },
+    { k: "王", a: "3", s: "「王」の 3画目は どこ？（3本目のよこ棒だよ）" },
+    { k: "田", a: "3", s: "「田」の 3画目は どこ？（なかの よこ棒だよ）" },
+    { k: "女", a: "1", s: "「女」の 最初（1画目）は どれ？（くの字だよ）" },
+    { k: "子", a: "2", s: "「子」の 2画目は どこ？（カギの形だよ）" },
+    { k: "九", a: "1", s: "「九」の 最初（1画目）は どれ？（はらいだよ）" },
+    { k: "車", a: "5", s: "「車」の まん中の長い たて棒は 何画目？" },
+    { k: "上", a: "1", s: "「上」の 最初（1画目）は どれ？（たて棒だよ）" }
+  ],
+  3: [ // 大問4&5: ことばのよみ（熟語・送り仮名）
+    { k: "王女", a: "おうじょ", s: "「王女」の よみかたは？" },
+    { k: "先生", a: "せんせい", s: "「先生」の よみかたは？" },
+    { k: "力もち", a: "ら", s: "ちか（　）もち" },
+    { k: "六年", a: "ね", s: "ろく（　）ん" },
+    { k: "学ぶ", a: "な", s: "ま（　）ぶ" },
+    { k: "出す", a: "だ", s: "（　）す" },
+    { k: "休む", a: "やす", s: "（　）む" }
+  ],
+  4: [ // 大問6&7: かんじ書き（書き取り）
+    { k: "雨", a: "雨", s: "（あめ）が ふる。" },
+    { k: "石", a: "石", s: "（いし）を なげる。" },
+    { k: "森", a: "森", s: "（もり）の なか。" },
+    { k: "右", a: "右", s: "（みぎ）の 手。" },
+    { k: "百", a: "百", s: "（ひゃく）えん だま。" },
+    { k: "目", a: "目", s: "（め）を あける。" },
+    { k: "足", a: "足", s: "（あし）が はやい。" }
+  ]
+};
 
 function App() {
-  const [view, setView] = useState('menu'); // menu, quiz, stageClear
-  const [currentStage, setCurrentStage] = useState(0);
-  const [stageList, setStageList] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [view, setView] = useState('menu');
+  const [stage, setStage] = useState(1);
+  const [idx, setIdx] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [isCorrect, setIsCorrect] = useState(null);
-  const [clearedStages, setClearedStages] = useState([]);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [res, setRes] = useState(null);
 
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  const playSound = (freq, type, duration) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  const start = (s) => {
+    const list = [...stageData[s]].sort(() => Math.random() - 0.5);
+    setStage(s); setIdx(0); setView('play'); make(list[0], s);
   };
 
-  const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
-
-  const selectStage = (stageIdx) => {
-    const startIdx = stageIdx * 10;
-    const list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
-    setStageList(list);
-    setCurrentStage(stageIdx);
-    setCurrentIndex(0);
-    setView('quiz');
-    makeChoices(list[0]);
-  };
-
-  const makeChoices = (question) => {
-    if (!question) return;
-    const correctYomi = question.yomi;
-    const otherYomis = allYomis.filter(y => y !== correctYomi).sort(() => Math.random() - 0.5).slice(0, 2);
-    setChoices([correctYomi, ...otherYomis].sort(() => Math.random() - 0.5));
-  };
-
-  const handleAnswer = (ans) => {
-    if (isCorrect !== null) return;
-    const currentQ = stageList[currentIndex];
+  const make = (q, s) => {
+    let others = [];
+    if (s === 2) others = ["1", "2", "3", "4", "5", "6"].filter(v => v !== q.a);
+    else if (s === 4) others = ["左", "白", "木", "田", "王", "目"];
+    else others = ["き", "なか", "ひと", "やま", "みず", "おん"];
     
-    if (ans === currentQ.yomi) {
-      playSound(880, 'sine', 0.3);
-      setIsCorrect(true);
+    let c = [q.a, ...others.sort(() => Math.random() - 0.5).slice(0, 2)];
+    setChoices(c.sort(() => Math.random() - 0.5));
+  };
+
+  const check = (a) => {
+    if (res !== null) return;
+    const currentList = stageData[stage];
+    if (a === currentList[idx].a) {
+      setRes(true);
       setTimeout(() => {
-        const nextIdx = currentIndex + 1;
-        if (nextIdx < 10) {
-          setCurrentIndex(nextIdx);
-          makeChoices(stageList[nextIdx]);
-          setIsCorrect(null);
-        } else {
-          setClearedStages(prev => Array.from(new Set([...prev, currentStage])));
-          setView('stageClear');
-          setIsCorrect(null);
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 3000);
-        }
-      }, 500);
+        if (idx + 1 < currentList.length) {
+          setIdx(idx + 1); make(currentList[idx + 1], stage); setRes(null);
+        } else { setView('menu'); setRes(null); }
+      }, 600);
     } else {
-      playSound(220, 'sawtooth', 0.5);
-      setIsCorrect(false);
-      setTimeout(() => setIsCorrect(null), 1000);
+      setRes(false); setTimeout(() => setRes(null), 1000);
     }
   };
 
   return (
-    <div className="kanji-container">
-      <div className="bg-elements">
-        <div className="cloud c1">☁️</div><div className="cloud c2">☁️</div>
-        <div className="star s1">✨</div><div className="star s2">✨</div>
-      </div>
-      
-      {view === 'menu' && (
-        <div className="card menu-card popup">
-          <div className="header title-font">🎀 かんけん10きゅう 🎀</div>
-          <p className="menu-sub">きょうは　どこを　がんばる？</p>
-          <div className="stage-grid">
-            {[...Array(8)].map((_, i) => (
-              <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${clearedStages.includes(i) ? 'cleared' : ''}`}>
-                <span className="stage-num">ステージ {i + 1}</span>
-                {clearedStages.includes(i) ? <span className="stage-medal">💮クリア!</span> : <span className="stage-icon">💎</span>}
-              </button>
-            ))}
+    <div className="app">
+      {view === 'menu' ? (
+        <div className="card">
+          <div className="title">🌸 10きゅう ごうかく 特訓 🌸</div>
+          <p className="sub">がんばる ステージを えらんでね！</p>
+          <div className="grid">
+            <button onClick={() => start(1)}>1. よみ (ぶん)</button>
+            <button onClick={() => start(2)}>2. かきじゅん</button>
+            <button onClick={() => start(3)}>3. よみ (ことば)</button>
+            <button onClick={() => start(4)}>4. かんじ かき</button>
           </div>
         </div>
-      )}
-
-      {view === 'quiz' && (
-        <div className="card quiz-card popup">
-          <div className="header">✨ ステージ {currentStage + 1} ✨</div>
-          <div className="progress-bar">
-            <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 10) * 100}%`}}></div>
-            <span className="progress-text">{currentIndex + 1} / 10 もんめ</span>
+      ) : (
+        <div className="card">
+          <div className="q-idx">ステージ {stage} : {idx + 1} / {stageData[stage].length}</div>
+          <div className="kanji-display">{stageData[stage][idx].k}</div>
+          <div className="sentence-box">{stageData[stage][idx].s}</div>
+          <div className="choices-grid">
+            {choices.map((c, i) => <button key={i} onClick={() => check(c)} className={`choice-btn color-${i}`}>{c}</button>)}
           </div>
-          <div className="kanji-box">{stageList[currentIndex].kanji}</div>
-          <div className="sentence">{stageList[currentIndex].sentence}</div>
-          <div className="choices">
-            {choices.map((c, i) => (
-              <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
-            ))}
-          </div>
-          <button onClick={() => setView('menu')} className="btn-back">もどる</button>
+          <button onClick={() => setView('menu')} className="back-btn">メニューへ</button>
         </div>
       )}
-
-      {view === 'stageClear' && (
-        <div className="card clear-card popup">
-          {showConfetti && <div className="confetti">🎉🎊✨</div>}
-          <div className="finish-title title-font">🎉 ステージ {currentStage + 1} クリア！ 🎉</div>
-          <div className="finish-icon bounce">🦄🍭💖</div>
-          <p className="finish-message">10もん　ぜんぶ　せいかい！<br/>すごい！　そのちょうし！</p>
-          <button onClick={() => setView('menu')} className="btn-restart">メニューへ　もどる</button>
-        </div>
-      )}
-
-      {isCorrect === true && <div className="overlay ok popup">まる！🙆‍♀️💕</div>}
-      {isCorrect === false && <div className="overlay ng popup">ざんねん…💧</div>}
+      {res === true && <div className="overlay ok">✨ 💮 まる！ ✨</div>}
+      {res === false && <div className="overlay ng">💧 ❌ ざんねん</div>}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
-
-        .kanji-container {
-          background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb);
-          background-size: 400% 400%;
-          animation: gradientBG 20s ease infinite;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          font-family: 'Kiwi Maru', sans-serif;
-          overflow: hidden;
-          position: relative;
-        }
-        .bg-elements { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .cloud, .star { position: absolute; font-size: 4rem; opacity: 0.6; animation: float 10s infinite linear; }
-        .c1 { top: 10%; left: 10%; animation-duration: 15s; } .c2 { top: 60%; right: 15%; animation-duration: 12s; animation-delay: -5s; font-size: 6rem; }
-        .s1 { top: 30%; right: 20%; animation-duration: 8s; font-size: 3rem; } .s2 { bottom: 20%; left: 25%; animation-duration: 10s; animation-delay: -2s; font-size: 2rem; }
-
-        .card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(10px);
-          border-radius: 50px;
-          padding: 30px;
-          width: 100%;
-          max-width: 500px;
-          box-shadow: 0 20px 40px rgba(255, 105, 180, 0.3), inset 0 0 20px rgba(255,255,255,0.5);
-          text-align: center;
-          border: 4px solid transparent;
-          background-clip: padding-box;
-          position: relative;
-          z-index: 1;
-        }
-        .menu-card { border-image: linear-gradient(to right, #ff9a9e, #fad0c4) 1; border-radius: 50px; /* fallback */ }
-        .quiz-card { border-image: linear-gradient(to right, #a1c4fd, #c2e9fb) 1; }
-        .clear-card { border-image: linear-gradient(to right, #ffd700, #ffecb3) 1; }
-
-        .popup { animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .bounce { animation: bounce 2s infinite; }
-
-        .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; text-shadow: 3px 3px 0 #fff, 5px 5px 0 rgba(255,105,180,0.2); }
-        .header { font-weight: bold; font-size: 1.5rem; margin-bottom: 20px; color: #ff69b4; }
-        .menu-sub { font-size: 1.2rem; color: #666; margin-bottom: 30px; font-weight: bold; }
-        
-        .stage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .btn-stage {
-          padding: 20px 10px; border: none; border-radius: 30px;
-          background: linear-gradient(to bottom, #fff, #f0f0f0);
-          color: #ff69b4; font-weight: bold; cursor: pointer;
-          box-shadow: 0 8px 0 #ffb6c1, 0 15px 20px rgba(255,105,180,0.2);
-          transition: all 0.1s; display: flex; flex-direction: column; align-items: center;
-        }
-        .btn-stage:active { transform: translateY(6px); box-shadow: 0 2px 0 #ffb6c1, 0 5px 10px rgba(255,105,180,0.2); }
-        .stage-num { font-size: 1.2rem; margin-bottom: 5px; font-family: 'Mochiy+Pop+One', sans-serif; }
-        .stage-icon { font-size: 1.5rem; }
-        .btn-stage.cleared {
-          background: linear-gradient(to bottom, #fff1b8, #ffe0b2);
-          color: #d48806; box-shadow: 0 8px 0 #ffd666, 0 15px 20px rgba(255, 215, 0, 0.2);
-        }
-        .stage-medal { font-size: 1.3rem; color: #ff4757; }
-        
-        .progress-bar { background: #ffe4e1; border-radius: 25px; height: 30px; position: relative; overflow: hidden; margin-bottom: 25px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
-        .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 30px; font-size: 1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 2; }
-        .progress-gauge { height: 100%; background: linear-gradient(to right, #ff9a9e, #feada6); transition: width 0.3s ease; border-radius: 25px; }
-        
-        .kanji-box { font-size: 8rem; font-weight: bold; border-radius: 40% 60% 50% 50% / 50% 50% 60% 40%; background: #fff; padding: 20px; color: #ff8c00; box-shadow: 0 10px 25px rgba(255, 165, 0, 0.3), inset 0 -5px 10px rgba(0,0,0,0.05); margin-bottom: 20px; animation: float 6s infinite ease-in-out; }
-        .sentence { font-size: 1.6rem; color: #555; margin-bottom: 30px; font-weight: bold; }
-        .choices { display: grid; gap: 18px; }
-        .btn-choice {
-          padding: 20px; font-size: 1.8rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.2);
-          font-family: 'Mochiy+Pop+One', sans-serif; transition: all 0.1s;
-          border: 2px solid rgba(255,255,255,0.5);
-        }
-        .btn-choice:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
-        .color-0 { background: linear-gradient(to bottom, #ff9a9e, #fecfef); }
-        .color-1 { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); }
-        .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
-        
-        .btn-back { margin-top: 30px; background: rgba(255,255,255,0.5); border: none; color: #ff69b4; font-weight: bold; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
-        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 7rem; z-index: 100; pointer-events: none; text-shadow: 3px 3px 0 #fff, 5px 5px 15px rgba(0,0,0,0.3); }
-        .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-
-        .finish-title { font-size: 2.5rem; margin-bottom: 20px; }
-        .finish-icon { font-size: 6rem; margin: 20px 0; }
-        .finish-message { font-size: 1.6rem; color: #555; font-weight: bold; line-height: 1.8; }
-        .btn-restart { background: linear-gradient(to bottom, #ff758c, #ff7eb3); box-shadow: 0 8px 0 #e65a70, 0 15px 25px rgba(255, 117, 140, 0.4); width: 100%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; padding: 20px; font-weight: bold; margin-top: 30px; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer; transition: all 0.1s; }
-        .btn-restart:active { transform: translateY(8px); box-shadow: 0 0 0 #e65a70; }
-        .confetti { position: absolute; top: -50px; left: 0; width: 100%; font-size: 4rem; animation: fall 3s linear infinite; z-index: -1; opacity: 0.7; }
-
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
-        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
+        .app { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Kiwi Maru', sans-serif; padding: 15px; }
+        .card { background: rgba(255,255,255,0.9); border-radius: 40px; padding: 30px; width: 100%; max-width: 420px; text-align: center; border: 4px dashed #ffb6c1; box-shadow: 0 10px 25px rgba(255,105,180,0.2); }
+        .title { font-size: 1.6rem; color: #ff69b4; font-weight: bold; margin-bottom: 5px; }
+        .sub { font-size: 0.9rem; color: #888; margin-bottom: 25px; }
+        .grid { display: grid; gap: 15px; }
+        button { padding: 18px; border-radius: 35px; border: none; background: white; color: #ff69b4; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #ffb6c1; font-size: 1.1rem; }
+        button:active { transform: translateY(6px); box-shadow: none; }
+        .kanji-display { font-size: 7rem; color: #ff8c00; margin: 15px 0; background: #fff1b8; border-radius: 30px; line-height: 1.2; }
+        .sentence-box { font-size: 1.3rem; font-weight: bold; margin-bottom: 25px; min-height: 3.5rem; display: flex; align-items: center; justify-content: center; }
+        .choices-grid { display: grid; gap: 12px; }
+        .choice-btn { color: white; font-size: 1.6rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .color-0 { background: #ff9a9e; box-shadow: 0 6px 0 #e68a8e; }
+        .color-1 { background: #a1c4fd; box-shadow: 0 6px 0 #89b0e5; }
+        .color-2 { background: #84fab0; box-shadow: 0 6px 0 #72d998; }
+        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; z-index: 100; pointer-events: none; }
+        .ok { color: #ff69b4; text-shadow: 3px 3px 0 #fff; } .ng { color: #5c9eff; text-shadow: 3px 3px 0 #fff; }
+        .back-btn { margin-top: 25px; background: none; color: #aaa; text-decoration: underline; box-shadow: none; font-size: 0.9rem; }
       `}</style>
     </div>
   );
