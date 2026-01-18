@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ（ネタバレ防止・精査済み）
+// 漢検10級全80文字データ（ネタバレ防止・修正済み）
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　（　）こ　ある。" },
@@ -32,7 +32,7 @@ const kanjiList = [
   { kanji: "川", yomi: "かわ", sentence: "（　）で　およぐ。" },
   { kanji: "田", yomi: "た", sentence: "（　）んぼに　いく。" },
   { kanji: "石", yomi: "いし", sentence: "（　）を　ひろう。" },
-  { kanji: "花", yomi: "はな", sentence: "きれいな　（　）が　さく。" },
+  { kanji: "花", yomi: "花", sentence: "きれいな　（　）が　さく。" },
   { kanji: "草", yomi: "くさ", sentence: "（　）を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "（　）の中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "（　）に　いく。" },
@@ -69,9 +69,9 @@ const kanjiList = [
   { kanji: "気", yomi: "き", sentence: "元気が　ある（　）。" },
   { kanji: "天", yomi: "てん", sentence: "（　）きが　いい。" },
   { kanji: "赤", yomi: "あか", sentence: "（　）い　りんご。" },
-  { kanji: "青", yomi: "あo", sentence: "（　）い　そら。" },
+  { kanji: "青", yomi: "あお", sentence: "（　）い　そら。" },
   { kanji: "白", yomi: "しろ", sentence: "（　）い　くも。" },
-  { kanji: "糸", yomi: "いo", sentence: "（　）を　とおす。" },
+  { kanji: "糸", yomi: "いと", sentence: "（　）を　とおす。" },
   { kanji: "車", yomi: "くるま", sentence: "（　）に　のる。" },
   { kanji: "町", yomi: "まち", sentence: "おとなりの　（　）。" },
   { kanji: "村", yomi: "むら", sentence: "（　）の　おまつり。" },
@@ -83,15 +83,13 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "（　）が　ふってきた。" }
 ];
 
-// 本物のマイクラ画像URL
+// 表示が安定している画像URL（公式系アセット）
 const mcCharacters = [
-  { name: "スティーブ", img: "http://googleusercontent.com/image_collection/image_retrieval/5333996315823858794_0", color: "#2dcedf" },
-  { name: "クリーパー", img: "http://googleusercontent.com/image_collection/image_retrieval/9934370686829093910_0", color: "#4caf50" },
-  { name: "アレックス", img: "http://googleusercontent.com/image_collection/image_retrieval/1197903233467518928_0", color: "#ff9800" },
-  { name: "エンダーマン", img: "http://googleusercontent.com/image_collection/image_retrieval/5033254757109568460_0", color: "#212121" },
-  { name: "ぶた", img: "http://googleusercontent.com/image_collection/image_retrieval/8161605830263074241_0", color: "#f48fb1" },
-  { name: "ひつじ", img: "http://googleusercontent.com/image_collection/image_retrieval/2079650507737198374_0", color: "#f5f5f5" },
-  { name: "ゾンビ", img: "http://googleusercontent.com/image_collection/image_retrieval/12064394733904869328_0", color: "#388e3c" }
+  { name: "スティーブ", img: "https://www.minecraft.net/content/dam/archive/c7c7f7634f664a781373510523a7895f/Steve.png", color: "#2dcedf" },
+  { name: "クリーパー", img: "https://paimon.moe/images/creeper.png", color: "#4caf50" }, // 安定した予備URL
+  { name: "アレックス", img: "https://www.minecraft.net/content/dam/archive/47b4d18721993427181f72746401083a/Alex.png", color: "#ff9800" },
+  { name: "エンダーマン", img: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/1/18/Enderman_JE3_BE2.png", color: "#212121" },
+  { name: "ぶた", img: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/c1/Pig_JE3_BE2.png", color: "#f48fb1" }
 ];
 
 function App() {
@@ -144,10 +142,10 @@ function App() {
       setIsCorrect(true);
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < 80) {
+        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < shuffledList.length) {
           setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
           setIsCorrect(null);
-        } else if (nextIdx < 80) {
+        } else if (nextIdx < shuffledList.length) {
           setCurrentIndex(nextIdx);
           makeChoices(shuffledList[nextIdx]);
           setIsCorrect(null);
@@ -168,7 +166,11 @@ function App() {
         <div className="card reward-card" style={{borderColor: rewardChar.color}}>
           <div className="mc-title">🎉 なかまに　なった！ 🎉</div>
           <div className="mc-img-box">
-            <img src={rewardChar.img} alt={rewardChar.name} className="mc-img" />
+            {/* onerrorで画像がでない時に文字をだす保険 */}
+            <img src={rewardChar.img} alt={rewardChar.name} className="mc-img" onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.parentNode.innerHTML = `<div style="font-size:5rem">${rewardChar.name === 'クリーパー' ? '💣' : '👤'}</div>`;
+            }} />
           </div>
           <div className="mc-name">{rewardChar.name}</div>
           <button onClick={() => {
@@ -188,9 +190,9 @@ function App() {
         <div className="card finish-card">
           <div className="finish-title">👑 ぜんもんクリア！ 👑</div>
           <div className="mc-img-box dragon">
-            <img src="http://googleusercontent.com/image_collection/image_retrieval/2127038554319248454_0" alt="ドラゴン" className="mc-img" />
+            <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/4c/Ender_Dragon_JE2_BE2.png" alt="ドラゴン" className="mc-img" />
           </div>
-          <p className="finish-message">80この　かんじを　ぜんぶ　クリアしたね！<br/>キミは　さいきょうの　マイクラマスターだ！</p>
+          <p className="finish-message">80この　かんじを　マスターしたね！<br/>キミは　さいきょうの　マイクラマスターだ！</p>
           <button onClick={startQuiz} className="btn-restart">もういちど　やる</button>
         </div>
       </div>
@@ -240,15 +242,12 @@ function App() {
         .reward-view { background: #1e1e1e !important; }
         .reward-card { border: 10px solid; background: white !important; border-radius: 0 !important; max-width: 400px; padding: 40px 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
         .mc-title { font-size: 2rem; color: #333; font-weight: bold; margin-bottom: 30px; }
-        .mc-img-box { width: 100%; max-height: 250px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; overflow: hidden; }
-        .mc-img { max-width: 100%; max-height: 250px; filter: drop-shadow(5px 5px 0 rgba(0,0,0,0.2)); }
+        .mc-img-box { width: 100%; min-height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
+        .mc-img { max-width: 100%; max-height: 250px; }
         .mc-name { font-size: 2.2rem; font-weight: bold; color: #333; margin-bottom: 35px; }
         .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 15px 30px; font-size: 1.6rem; font-weight: bold; cursor: pointer; border-radius: 0; width: 100%; box-shadow: 6px 6px 0 #1b5e20; }
         .finish-view { background: #2c3e50 !important; }
         .finish-card { border: 8px solid #ffd700; border-radius: 10px !important; }
-        .finish-title { font-size: 2.2rem; color: #b8860b; font-weight: bold; margin-bottom: 20px; }
-        .finish-message { font-size: 1.4rem; color: #444; margin-top: 20px; font-weight: bold; }
-        .btn-restart { background: #ffd700; color: #000; border: 4px solid #b8860b; padding: 15px; font-size: 1.6rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; }
       `}</style>
     </div>
   );
