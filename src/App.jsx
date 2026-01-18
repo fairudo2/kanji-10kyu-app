@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級（1年生）全80文字データ（自然な日本語に完全修正）
+// 漢検10級（1年生）全80文字データ
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "(一)ねんせい。" },
   { kanji: "右", yomi: "みぎ", sentence: "(右)の手をあげる。" },
@@ -45,7 +45,7 @@ const kanjiList = [
   { kanji: "水", yomi: "みず", sentence: "(水)をのむ。" },
   { kanji: "正", yomi: "せい", sentence: "(正)かいです。" },
   { kanji: "生", yomi: "せい", sentence: "１年(生)。" },
-  { kanji: "青", yomi: "あo", sentence: "(青)いそら。" },
+  { kanji: "青", yomi: "あお", sentence: "(青)いそら。" },
   { kanji: "夕", yomi: "ゆう", sentence: "(夕)やけ。" },
   { kanji: "石", yomi: "いし", sentence: "(石)をなげる。" },
   { kanji: "赤", yomi: "あか", sentence: "(赤)いりんご。" },
@@ -85,43 +85,83 @@ const kanjiList = [
 ];
 
 function App() {
-  const [q, setQ] = useState(null);
+  const [shuffledList, setShuffledList] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [score, setScore] = useState(0);
   const [isCorrect, setIsCorrect] = useState(null);
+  const [isFinished, setIsFinished] = useState(false);
 
-  const nextQuestion = () => {
-    const nextQ = kanjiList[Math.floor(Math.random() * kanjiList.length)];
-    setQ(nextQ);
-    const wrong = kanjiList
-      .filter(item => item.yomi !== nextQ.yomi)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 2)
-      .map(item => item.yomi);
-    setChoices([nextQ.yomi, ...wrong].sort(() => 0.5 - Math.random()));
-    setIsCorrect(null);
+  // 読み方のセット（選択肢の重複チェック用）
+  const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
+
+  // リセット・開始
+  const startQuiz = () => {
+    const list = [...kanjiList].sort(() => Math.random() - 0.5);
+    setShuffledList(list);
+    setCurrentIndex(0);
+    setIsFinished(false);
+    makeChoices(list[0]);
   };
 
-  useEffect(() => { nextQuestion(); }, []);
+  useEffect(() => {
+    startQuiz();
+  }, []);
+
+  // 選択肢を作る（同じ読みが出ないように調整）
+  const makeChoices = (question) => {
+    if (!question) return;
+    const correctYomi = question.yomi;
+    // 正解以外の読みからランダムに2つ選ぶ
+    const otherYomis = allYomis
+      .filter(y => y !== correctYomi)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+    
+    setChoices([correctYomi, ...otherYomis].sort(() => Math.random() - 0.5));
+  };
 
   const handleAnswer = (ans) => {
-    if (ans === q.yomi) {
+    const currentQ = shuffledList[currentIndex];
+    if (ans === currentQ.yomi) {
       setIsCorrect(true);
-      setScore(s => s + 1);
-      setTimeout(nextQuestion, 400);
+      setTimeout(() => {
+        if (currentIndex + 1 < shuffledList.length) {
+          const nextIdx = currentIndex + 1;
+          setCurrentIndex(nextIdx);
+          makeChoices(shuffledList[nextIdx]);
+          setIsCorrect(null);
+        } else {
+          setIsFinished(true);
+        }
+      }, 400);
     } else {
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
     }
   };
 
+  if (isFinished) {
+    return (
+      <div className="kanji-container">
+        <div className="card">
+          <div className="finish-text">✨ ぜんもんクリア！ ✨</div>
+          <div className="kanji-box">🌸</div>
+          <p>80文字ぜんぶ まわりました！すごい！</p>
+          <button onClick={startQuiz} className="btn-restart">もういちど やる</button>
+        </div>
+        <style>{`.finish-text { font-size: 2rem; color: #f5222d; font-weight: bold; margin-bottom: 20px; } .btn-restart { background: #69c0ff; width: 100%; margin-top: 20px; }`}</style>
+      </div>
+    );
+  }
+
+  const q = shuffledList[currentIndex];
   if (!q) return null;
 
   return (
     <div className="kanji-container">
       <div className="card">
         <div className="header">かんけん10きゅう きあい！</div>
-        <div className="score">げんざい {score}問せいかい！</div>
+        <div className="progress-bar">{kanjiList.length}問じゅう {currentIndex + 1}問め</div>
         <div className="kanji-box">{q.kanji}</div>
         <div className="sentence">{q.sentence}</div>
         <div className="choices">
@@ -138,8 +178,8 @@ function App() {
       <style>{`
         .kanji-container { background: #fffae6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: sans-serif; }
         .card { background: white; border-radius: 25px; padding: 25px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; border: 4px solid #ffd666; }
-        .header { color: #d48806; font-weight: bold; margin-bottom: 10px; }
-        .score { font-size: 1.1rem; color: #666; margin-bottom: 20px; }
+        .header { color: #d48806; font-weight: bold; margin-bottom: 5px; }
+        .progress-bar { font-size: 1.2rem; font-weight: bold; color: #666; margin-bottom: 20px; background: #eee; border-radius: 10px; padding: 5px; }
         .kanji-box { font-size: 8rem; font-weight: bold; background: #fff1b8; border-radius: 20px; margin-bottom: 20px; color: #333; }
         .sentence { font-size: 1.4rem; color: #555; margin-bottom: 30px; min-height: 3rem; }
         .choices { display: grid; gap: 15px; }
