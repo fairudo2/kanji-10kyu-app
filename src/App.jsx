@@ -1,26 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-// 漢検10級 全80文字
+// 漢検10級 全80文字リスト
 const KANJI_80 = "一二三四五六七八九十百千上下左右中大小月日火水木金土山川田石花草林森竹虫貝犬足手目耳口力人子女男名正生立休出入見音学校文字早夕空気天赤青白糸車町村王玉円先年雨".split("");
 
-// 各ステージ（10文字ずつ）に対応した筆順データ。
-// ここではサンプルとして主要なものを定義。本番では全文字の座標をセットします。
-const STROKE_MASTER = {
-  "一": { p: ["M20,50 L80,50"], a: "1" },
-  "二": { p: ["M30,40 L70,40", "M20,65 L80,65"], a: "2" },
-  "三": { p: ["M30,30 L70,30", "M35,50 L65,50", "M25,75 L75,75"], a: "3" },
-  "四": { p: ["M30,25 L30,85", "M30,25 L75,25 L75,85", "M45,25 L45,55", "M45,55 L65,55", "M30,85 L75,85"], a: "2" },
-  "五": { p: ["M25,30 L80,30", "M50,30 L40,60", "M40,60 L75,60", "M20,90 L85,90"], a: "2" },
-  "十": { p: ["M20,50 L80,50", "M50,20 L50,85"], a: "1" },
-  "右": { p: ["M35,25 L70,85", "M20,45 L85,45", "M40,60 L75,60 L75,90 L40,90 Z"], a: "1" },
-  "左": { p: ["M25,45 L85,45", "M35,25 L70,85", "M45,60 L45,95", "M45,60 L75,60", "M45,95 L75,95"], a: "2" }
+// 【重要】80文字すべての「筆順問題（赤マーカーの位置）」データ
+// x, y: マーカーの位置(%), type: 線の形 (yoko:横, tate:縦, naname:斜め, ten:点)
+const STROKE_MAP = {
+  "一": { a: "1", x: 50, y: 50, type: "yoko" },
+  "二": { a: "2", x: 50, y: 70, type: "yoko" }, // 2画目（下の横棒）
+  "三": { a: "2", x: 50, y: 50, type: "yoko" }, // 2画目（中の横棒）
+  "四": { a: "2", x: 25, y: 50, type: "tate" }, // 2画目（L字の縦）
+  "五": { a: "2", x: 25, y: 50, type: "tate" }, // 2画目（縦棒）
+  "六": { a: "4", x: 65, y: 70, type: "ten" }, // 4画目（右の点）
+  "七": { a: "1", x: 30, y: 45, type: "yoko" }, // 1画目（横）
+  "八": { a: "2", x: 70, y: 60, type: "naname" }, // 2画目（右払い）
+  "九": { a: "1", x: 35, y: 40, type: "naname" }, // 1画目（左払い）
+  "十": { a: "1", x: 50, y: 50, type: "yoko" }, // 1画目（横）
+  "百": { a: "2", x: 30, y: 40, type: "naname" }, // 2画目（左払い）
+  "千": { a: "1", x: 50, y: 40, type: "naname" }, // 1画目（左払い）
+  "上": { a: "1", x: 50, y: 30, type: "tate" }, // 1画目（縦）
+  "下": { a: "3", x: 70, y: 60, type: "ten" }, // 3画目（点）
+  "左": { a: "1", x: 50, y: 35, type: "yoko" }, // 1画目（横）★重要
+  "右": { a: "1", x: 35, y: 35, type: "naname" }, // 1画目（払い）★重要
+  "中": { a: "4", x: 50, y: 50, type: "tate" }, // 4画目（真ん中）
+  "大": { a: "2", x: 30, y: 60, type: "naname" }, // 2画目（左払い）
+  "小": { a: "1", x: 50, y: 50, type: "tate" }, // 1画目（真ん中）
+  "月": { a: "1", x: 30, y: 50, type: "naname" }, // 1画目（左払い）
+  "日": { a: "2", x: 70, y: 50, type: "tate" }, // 2画目（右縦）
+  "火": { a: "2", x: 80, y: 40, type: "ten" }, // 2画目（右点）
+  "水": { a: "1", x: 50, y: 50, type: "tate" }, // 1画目（縦ハネ）
+  "木": { a: "2", x: 50, y: 30, type: "tate" }, // 2画目（縦）
+  "金": { a: "1", x: 40, y: 25, type: "naname" }, // 1画目（左払い）
+  "土": { a: "1", x: 50, y: 35, type: "yoko" }, // 1画目（横）
+  "山": { a: "1", x: 50, y: 50, type: "tate" }, // 1画目（真ん中）
+  "川": { a: "2", x: 50, y: 40, type: "tate" }, // 2画目（真ん中）
+  "田": { a: "3", x: 50, y: 50, type: "yoko" }, // 3画目（中の横）★重要
+  "石": { a: "1", x: 50, y: 25, type: "yoko" }, // 1画目（横）
+  "花": { a: "1", x: 30, y: 20, type: "yoko" },
+  "草": { a: "1", x: 30, y: 20, type: "yoko" },
+  "林": { a: "4", x: 40, y: 60, type: "naname" },
+  "森": { a: "12", x: 80, y: 80, type: "naname" }, // ※画数が多いので最後の払い
+  "竹": { a: "1", x: 30, y: 30, type: "naname" },
+  "虫": { a: "5", x: 50, y: 80, type: "yoko" }, // 最後の点
+  "貝": { a: "7", x: 70, y: 80, type: "ten" },
+  "犬": { a: "4", x: 75, y: 25, type: "ten" }, // 右上の点
+  "足": { a: "1", x: 50, y: 30, type: "tate" },
+  "手": { a: "4", x: 50, y: 50, type: "tate" }, // 最後のハネ
+  "目": { a: "2", x: 70, y: 50, type: "tate" },
+  "耳": { a: "1", x: 50, y: 20, type: "yoko" },
+  "口": { a: "2", x: 70, y: 50, type: "tate" },
+  "力": { a: "1", x: 50, y: 40, type: "tate" },
+  "人": { a: "1", x: 40, y: 40, type: "naname" },
+  "子": { a: "2", x: 50, y: 40, type: "tate" }, // カギ
+  "女": { a: "1", x: 40, y: 40, type: "naname" }, // くの字
+  "男": { a: "1", x: 30, y: 30, type: "tate" },
+  "名": { a: "1", x: 35, y: 25, type: "naname" },
+  "正": { a: "1", x: 50, y: 20, type: "yoko" },
+  "生": { a: "3", x: 50, y: 50, type: "yoko" },
+  "立": { a: "1", x: 50, y: 20, type: "tate" },
+  "休": { a: "1", x: 30, y: 40, type: "naname" },
+  "出": { a: "1", x: 50, y: 50, type: "tate" },
+  "入": { a: "1", x: 40, y: 30, type: "naname" },
+  "見": { a: "4", x: 30, y: 50, type: "tate" },
+  "音": { a: "1", x: 50, y: 20, type: "tate" },
+  "学": { a: "1", x: 30, y: 20, type: "ten" },
+  "校": { a: "3", x: 40, y: 60, type: "naname" },
+  "文": { a: "1", x: 50, y: 20, type: "ten" },
+  "字": { a: "1", x: 50, y: 20, type: "ten" },
+  "早": { a: "1", x: 50, y: 20, type: "tate" },
+  "夕": { a: "1", x: 40, y: 30, type: "naname" },
+  "空": { a: "1", x: 50, y: 20, type: "ten" },
+  "気": { a: "1", x: 40, y: 25, type: "naname" },
+  "天": { a: "1", x: 50, y: 30, type: "yoko" },
+  "赤": { a: "1", x: 50, y: 20, type: "yoko" },
+  "青": { a: "1", x: 50, y: 20, type: "yoko" },
+  "白": { a: "1", x: 40, y: 30, type: "naname" },
+  "糸": { a: "1", x: 35, y: 30, type: "naname" },
+  "車": { a: "5", x: 50, y: 50, type: "tate" }, // 中の縦
+  "町": { a: "1", x: 30, y: 30, type: "tate" },
+  "村": { a: "1", x: 30, y: 40, type: "yoko" },
+  "王": { a: "3", x: 50, y: 50, type: "yoko" }, // 中の横 ★重要
+  "玉": { a: "3", x: 50, y: 50, type: "yoko" },
+  "円": { a: "1", x: 25, y: 50, type: "tate" },
+  "先": { a: "1", x: 40, y: 25, type: "naname" }, // 左払い ★重要
+  "年": { a: "3", x: 50, y: 50, type: "yoko" },
+  "雨": { a: "1", x: 50, y: 20, type: "yoko" },
 };
 
+// マーカーがない場合のデフォルト
+const DEFAULT_STROKE = { a: "1", x: 50, y: 50, type: "yoko" };
+
 function App() {
-  const [view, setView] = useState('mainMenu'); 
-  const [stage, setStage] = useState(1); 
-  const [subStage, setSubStage] = useState(0); 
-  const [questions, setQuestions] = useState([]);
+  const [view, setView] = useState('mainMenu');
+  const [stage, setStage] = useState(1);
+  const [subStage, setSubStage] = useState(0);
+  const [qList, setQList] = useState([]);
   const [idx, setIdx] = useState(0);
   const [choices, setChoices] = useState([]);
   const [res, setRes] = useState(null);
@@ -29,24 +103,25 @@ function App() {
     const startIdx = s * 10;
     const chars = KANJI_80.slice(startIdx, startIdx + 10);
     
-    // 選択されたサブステージの漢字10個に対して、正しいデータを割り当てる
+    // データ作成
     const newQuestions = chars.map((k) => {
-      // その漢字専用のデータがあれば使い、なければその漢字の形に合わせた線を出す
-      const stroke = STROKE_MASTER[k] || { 
-        p: ["M20,30 L80,30", "M20,50 L80,50", "M20,70 L80,70"], 
-        a: "1" 
-      };
+      // 筆順マップからデータを取得、なければデフォルト
+      const sData = STROKE_MAP[k] || DEFAULT_STROKE;
       
       return {
         kanji: k,
-        ans: m === 2 ? stroke.a : (m === 4 ? k : "よみ"),
-        sentence: m === 2 ? "あかい　せんは　なんばんめ？" : "（　）の　なまえは？",
-        paths: stroke.p,
-        target: Math.min(parseInt(stroke.a) - 1, stroke.p.length - 1)
+        // ステージによって正解を変える
+        ans: m === 2 ? sData.a : (m === 4 ? k : "よみ"), 
+        // 筆順用のデータ
+        sx: sData.x, sy: sData.y, stype: sData.type,
+        // ステージ1,3,4用のダミー文
+        sentence: m === 1 ? "（　）の　かんじを　よもう。" : 
+                  m === 2 ? "あかい　ところの　せんは　なんばんめ？" :
+                  m === 3 ? "ことばの　よみは？" : "（　）に　はいる　かんじは？"
       };
     });
 
-    setQuestions(newQuestions);
+    setQList(newQuestions);
     setStage(m);
     setSubStage(s);
     setIdx(0);
@@ -56,11 +131,11 @@ function App() {
 
   const generateChoices = (q, m) => {
     let c = [];
-    if (m === 2) {
-      c = ["1", "2", "3", "4", "5"].filter(v => v !== q.ans).sort(() => Math.random() - 0.5).slice(0, 2);
-    } else if (m === 4) {
-      c = ["右", "左", "石", "大", "小"].filter(v => v !== q.ans).sort(() => Math.random() - 0.5).slice(0, 2);
-    } else {
+    if (m === 2) { // 筆順は数字
+      c = ["1", "2", "3", "4", "5", "6"].filter(v => v !== q.ans).sort(() => Math.random() - 0.5).slice(0, 2);
+    } else if (m === 4) { // 書きは漢字
+      c = ["右", "左", "石", "大", "小", "木"].filter(v => v !== q.ans).sort(() => Math.random() - 0.5).slice(0, 2);
+    } else { // 読みはひらがな
       c = ["いち", "なか", "やま", "ひと", "はな"].filter(v => v !== q.ans).sort(() => Math.random() - 0.5).slice(0, 2);
     }
     setChoices([q.ans, ...c].sort(() => Math.random() - 0.5));
@@ -68,12 +143,16 @@ function App() {
 
   const handleAnswer = (a) => {
     if (res !== null) return;
-    if (a === questions[idx].ans) {
+    // ステージ1,3は読み問題だが、ここではデモとして正解を固定（本来は読みデータが必要）
+    // 筆順(2)と書き(4)は正確に判定
+    const isCorrect = (stage === 1 || stage === 3) ? true : (a === qList[idx].ans);
+    
+    if (isCorrect) {
       setRes(true);
       setTimeout(() => {
         if (idx + 1 < 10) {
           setIdx(idx + 1);
-          generateChoices(questions[idx + 1], stage);
+          generateChoices(qList[idx + 1], stage);
           setRes(null);
         } else {
           setView('clear');
@@ -103,11 +182,11 @@ function App() {
       {view === 'subMenu' && (
         <div className="card">
           <div className="title">ステージ {stage}</div>
-          <p className="sub-title">どの　かんじを　やる？</p>
+          <p className="sub-title">10もんずつ　ちょうせん！</p>
           <div className="sub-grid">
             {[...Array(8)].map((_, i) => (
               <button key={i} onClick={() => startQuiz(stage, i)}>
-                {i * 10 + 1}〜{(i + 1) * 10}もん
+                {i * 10 + 1} 〜 {i * 10 + 10}
               </button>
             ))}
           </div>
@@ -119,17 +198,18 @@ function App() {
         <div className="card">
           <div className="info">{subStage * 10 + idx + 1} / 80 もんめ</div>
           <div className="display">
-            {stage === 2 ? (
-              <svg viewBox="0 0 100 100" className="kanji-svg">
-                {questions[idx].paths.map((p, i) => (
-                  <path key={i} d={p} className={i === questions[idx].target ? "red-stroke" : "gray-stroke"} />
-                ))}
-              </svg>
-            ) : (
-              <div className="kanji-txt">{questions[idx].kanji}</div>
+            {/* 漢字を表示 */}
+            <div className="kanji-base">{qList[idx].kanji}</div>
+            
+            {/* 筆順ステージのみ、赤いマーカーを重ねる */}
+            {stage === 2 && (
+              <div 
+                className={`marker ${qList[idx].stype}`} 
+                style={{ left: `${qList[idx].sx}%`, top: `${qList[idx].sy}%` }}
+              ></div>
             )}
           </div>
-          <div className="sentence">{questions[idx].sentence}</div>
+          <div className="sentence">{qList[idx].sentence}</div>
           <div className="choices">
             {choices.map((c, i) => (
               <button key={i} onClick={() => handleAnswer(c)} className={`btn-${i}`}>{c}</button>
@@ -151,24 +231,31 @@ function App() {
 
       <style>{`
         .container { background: #ffdde1; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; }
-        .card { background: white; border-radius: 40px; padding: 30px; width: 420px; text-align: center; border: 4px dashed #ffb6c1; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .title { font-size: 1.6rem; color: #ff69b4; font-weight: bold; margin-bottom: 15px; }
-        .sub-title { color: #888; margin-bottom: 20px; font-size: 0.9rem; }
+        .card { background: white; border-radius: 40px; padding: 30px; width: 420px; text-align: center; border: 4px dashed #ffb6c1; }
+        .title { font-size: 1.6rem; color: #ff69b4; font-weight: bold; margin-bottom: 20px; }
+        .sub-title { color: #888; margin-bottom: 15px; }
         .grid, .sub-grid { display: grid; gap: 12px; }
         .sub-grid { grid-template-columns: 1fr 1fr; }
         button { padding: 15px; border-radius: 30px; border: none; background: white; color: #ff69b4; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #ffb6c1; font-size: 1.1rem; }
-        .display { background: #fff1b8; border-radius: 30px; margin: 20px 0; height: 180px; display: flex; justify-content: center; align-items: center; }
-        .kanji-txt { font-size: 8rem; color: #ff8c00; }
-        .kanji-svg { width: 140px; height: 140px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .gray-stroke { stroke: #e0e0e0; stroke-width: 8; }
-        .red-stroke { stroke: #ff4757; stroke-width: 12; animation: blink 1s infinite; }
+        
+        .display { background: #fff1b8; border-radius: 30px; margin: 20px auto; width: 200px; height: 200px; position: relative; overflow: hidden; }
+        .kanji-base { font-size: 9rem; color: #ff8c00; line-height: 200px; font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; position: absolute; width: 100%; text-align: center; top: 0; left: 0; z-index: 1; }
+        
+        /* マーカーの設定：絶対配置で漢字の上に置く */
+        .marker { position: absolute; background: rgba(255, 0, 0, 0.7); z-index: 2; transform: translate(-50%, -50%); border-radius: 5px; animation: blink 1s infinite; }
+        .marker.yoko { width: 60px; height: 10px; }
+        .marker.tate { width: 10px; height: 60px; }
+        .marker.naname { width: 40px; height: 10px; transform: translate(-50%, -50%) rotate(45deg); }
+        .marker.ten { width: 20px; height: 20px; border-radius: 50%; }
+        
         @keyframes blink { 50% { opacity: 0.3; } }
+        
         .sentence { font-size: 1.2rem; font-weight: bold; margin-bottom: 25px; color: #555; }
-        .choices { display: grid; gap: 12px; }
+        .choices { display: grid; gap: 10px; }
         .btn-0 { background: #ff9a9e; color: white; } .btn-1 { background: #a1c4fd; color: white; } .btn-2 { background: #84fab0; color: white; }
-        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; pointer-events: none; z-index: 100; text-shadow: 2px 2px 10px white; }
+        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; z-index: 100; pointer-events: none; text-shadow: 2px 2px 5px white; }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-        .back { margin-top: 25px; background: none; box-shadow: none; color: #aaa; text-decoration: underline; font-size: 1rem; }
+        .back { margin-top: 20px; background: none; box-shadow: none; color: #aaa; text-decoration: underline; }
       `}</style>
     </div>
   );
