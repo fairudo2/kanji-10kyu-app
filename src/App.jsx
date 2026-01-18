@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ（ネタバレなし・文脈修正済み）
+// 漢検10級全80文字データ（変更なし）
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "一（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　二（　）こ　ある。" },
@@ -92,6 +92,7 @@ function App() {
   const [choices, setChoices] = useState([]);
   const [isCorrect, setIsCorrect] = useState(null);
   const [clearedStages, setClearedStages] = useState([]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -108,7 +109,6 @@ function App() {
 
   const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
 
-  // ステージ開始
   const selectStage = (stageIdx) => {
     const startIdx = stageIdx * 10;
     const list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
@@ -143,6 +143,8 @@ function App() {
           setClearedStages(prev => Array.from(new Set([...prev, currentStage])));
           setView('stageClear');
           setIsCorrect(null);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
         }
       }, 500);
     } else {
@@ -152,92 +154,157 @@ function App() {
     }
   };
 
-  // メニュー画面
-  if (view === 'menu') {
-    return (
-      <div className="kanji-container">
-        <div className="card menu-card">
-          <div className="header">🎀 かんけん10きゅう 🎀</div>
-          <p className="menu-sub">どこの　おべんきょうを　する？</p>
+  return (
+    <div className="kanji-container">
+      <div className="bg-elements">
+        <div className="cloud c1">☁️</div><div className="cloud c2">☁️</div>
+        <div className="star s1">✨</div><div className="star s2">✨</div>
+      </div>
+      
+      {view === 'menu' && (
+        <div className="card menu-card popup">
+          <div className="header title-font">🎀 かんけん10きゅう 🎀</div>
+          <p className="menu-sub">きょうは　どこを　がんばる？</p>
           <div className="stage-grid">
             {[...Array(8)].map((_, i) => (
               <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${clearedStages.includes(i) ? 'cleared' : ''}`}>
-                ステージ {i + 1} {clearedStages.includes(i) && '🌸'}
+                <span className="stage-num">ステージ {i + 1}</span>
+                {clearedStages.includes(i) ? <span className="stage-medal">💮クリア!</span> : <span className="stage-icon">💎</span>}
               </button>
             ))}
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  // ステージクリア画面
-  if (view === 'stageClear') {
-    return (
-      <div className="kanji-container">
-        <div className="card clear-card">
-          <div className="finish-title">🌸 ステージ {currentStage + 1} クリア！ 🌸</div>
-          <div className="finish-icon">✨🍭💎</div>
-          <p className="finish-message">10問　ぜんぶ　せいかい！<br/>とっても　がんばったね！</p>
-          <button onClick={() => setView('menu')} className="btn-restart">メニューに　もどる</button>
+      {view === 'quiz' && (
+        <div className="card quiz-card popup">
+          <div className="header">✨ ステージ {currentStage + 1} ✨</div>
+          <div className="progress-bar">
+            <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 10) * 100}%`}}></div>
+            <span className="progress-text">{currentIndex + 1} / 10 もんめ</span>
+          </div>
+          <div className="kanji-box">{stageList[currentIndex].kanji}</div>
+          <div className="sentence">{stageList[currentIndex].sentence}</div>
+          <div className="choices">
+            {choices.map((c, i) => (
+              <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
+            ))}
+          </div>
+          <button onClick={() => setView('menu')} className="btn-back">もどる</button>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  const q = stageList[currentIndex];
-  if (!q) return null;
+      {view === 'stageClear' && (
+        <div className="card clear-card popup">
+          {showConfetti && <div className="confetti">🎉🎊✨</div>}
+          <div className="finish-title title-font">🎉 ステージ {currentStage + 1} クリア！ 🎉</div>
+          <div className="finish-icon bounce">🦄🍭💖</div>
+          <p className="finish-message">10もん　ぜんぶ　せいかい！<br/>すごい！　そのちょうし！</p>
+          <button onClick={() => setView('menu')} className="btn-restart">メニューへ　もどる</button>
+        </div>
+      )}
 
-  return (
-    <div className="kanji-container">
-      <div className="card">
-        <div className="header">🎀 ステージ {currentStage + 1} 🎀</div>
-        <div className="progress-bar">
-          <span className="progress-text">10もんじゅう {currentIndex + 1}もんめ</span>
-          <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 10) * 100}%`}}></div>
-        </div>
-        <div className="kanji-box">{q.kanji}</div>
-        <div className="sentence">{q.sentence}</div>
-        <div className="choices">
-          {choices.map((c, i) => (
-            <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
-          ))}
-        </div>
-        <button onClick={() => setView('menu')} className="btn-back">やめる</button>
-      </div>
-      {isCorrect === true && <div className="overlay ok">まる！💖</div>}
-      {isCorrect === false && <div className="overlay ng">ざんねん…💧</div>}
+      {isCorrect === true && <div className="overlay ok popup">まる！🙆‍♀️💕</div>}
+      {isCorrect === false && <div className="overlay ng popup">ざんねん…💧</div>}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&display=swap');
-        .kanji-container { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'Kiwi Maru', sans-serif; }
-        .card { background: #fffef0; border-radius: 40px; padding: 30px; width: 100%; max-width: 480px; box-shadow: 0 15px 35px rgba(255, 105, 180, 0.2); text-align: center; border: 4px dashed #ffb6c1; }
-        .header { color: #ff69b4; font-weight: bold; font-size: 1.3rem; margin-bottom: 15px; }
+        @import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
+
+        .kanji-container {
+          background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb);
+          background-size: 400% 400%;
+          animation: gradientBG 20s ease infinite;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          font-family: 'Kiwi Maru', sans-serif;
+          overflow: hidden;
+          position: relative;
+        }
+        .bg-elements { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .cloud, .star { position: absolute; font-size: 4rem; opacity: 0.6; animation: float 10s infinite linear; }
+        .c1 { top: 10%; left: 10%; animation-duration: 15s; } .c2 { top: 60%; right: 15%; animation-duration: 12s; animation-delay: -5s; font-size: 6rem; }
+        .s1 { top: 30%; right: 20%; animation-duration: 8s; font-size: 3rem; } .s2 { bottom: 20%; left: 25%; animation-duration: 10s; animation-delay: -2s; font-size: 2rem; }
+
+        .card {
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(10px);
+          border-radius: 50px;
+          padding: 30px;
+          width: 100%;
+          max-width: 500px;
+          box-shadow: 0 20px 40px rgba(255, 105, 180, 0.3), inset 0 0 20px rgba(255,255,255,0.5);
+          text-align: center;
+          border: 4px solid transparent;
+          background-clip: padding-box;
+          position: relative;
+          z-index: 1;
+        }
+        .menu-card { border-image: linear-gradient(to right, #ff9a9e, #fad0c4) 1; border-radius: 50px; /* fallback */ }
+        .quiz-card { border-image: linear-gradient(to right, #a1c4fd, #c2e9fb) 1; }
+        .clear-card { border-image: linear-gradient(to right, #ffd700, #ffecb3) 1; }
+
+        .popup { animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bounce { animation: bounce 2s infinite; }
+
+        .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; text-shadow: 3px 3px 0 #fff, 5px 5px 0 rgba(255,105,180,0.2); }
+        .header { font-weight: bold; font-size: 1.5rem; margin-bottom: 20px; color: #ff69b4; }
+        .menu-sub { font-size: 1.2rem; color: #666; margin-bottom: 30px; font-weight: bold; }
         
-        .stage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-stage { padding: 20px; font-size: 1.2rem; border: none; border-radius: 20px; background: white; color: #ff69b4; font-weight: bold; cursor: pointer; border: 3px solid #ffb6c1; box-shadow: 0 4px 0 #ffb6c1; }
-        .btn-stage.cleared { background: #fff1b8; color: #d48806; border-color: #ffd666; box-shadow: 0 4px 0 #ffd666; }
+        .stage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-stage {
+          padding: 20px 10px; border: none; border-radius: 30px;
+          background: linear-gradient(to bottom, #fff, #f0f0f0);
+          color: #ff69b4; font-weight: bold; cursor: pointer;
+          box-shadow: 0 8px 0 #ffb6c1, 0 15px 20px rgba(255,105,180,0.2);
+          transition: all 0.1s; display: flex; flex-direction: column; align-items: center;
+        }
+        .btn-stage:active { transform: translateY(6px); box-shadow: 0 2px 0 #ffb6c1, 0 5px 10px rgba(255,105,180,0.2); }
+        .stage-num { font-size: 1.2rem; margin-bottom: 5px; font-family: 'Mochiy+Pop+One', sans-serif; }
+        .stage-icon { font-size: 1.5rem; }
+        .btn-stage.cleared {
+          background: linear-gradient(to bottom, #fff1b8, #ffe0b2);
+          color: #d48806; box-shadow: 0 8px 0 #ffd666, 0 15px 20px rgba(255, 215, 0, 0.2);
+        }
+        .stage-medal { font-size: 1.3rem; color: #ff4757; }
         
-        .progress-bar { background: #ffe4e1; border-radius: 25px; height: 25px; position: relative; overflow: hidden; margin-bottom: 25px; }
-        .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 25px; font-size: 0.9rem; font-weight: bold; color: #d66b8a; z-index: 2; }
-        .progress-gauge { height: 100%; background: linear-gradient(to right, #ff9a9e, #fad0c4); transition: width 0.3s ease; }
+        .progress-bar { background: #ffe4e1; border-radius: 25px; height: 30px; position: relative; overflow: hidden; margin-bottom: 25px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
+        .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 30px; font-size: 1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 2; }
+        .progress-gauge { height: 100%; background: linear-gradient(to right, #ff9a9e, #feada6); transition: width 0.3s ease; border-radius: 25px; }
         
-        .kanji-box { font-size: 8rem; font-weight: bold; border-radius: 30%; background: #fff1b8; padding: 20px; color: #ff8c00; box-shadow: 0 10px 20px rgba(255, 165, 0, 0.2); margin-bottom: 20px; }
-        .sentence { font-size: 1.5rem; color: #555; margin-bottom: 30px; font-weight: bold; }
-        .choices { display: grid; gap: 15px; }
-        .btn-choice { padding: 18px; font-size: 1.6rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.1); }
+        .kanji-box { font-size: 8rem; font-weight: bold; border-radius: 40% 60% 50% 50% / 50% 50% 60% 40%; background: #fff; padding: 20px; color: #ff8c00; box-shadow: 0 10px 25px rgba(255, 165, 0, 0.3), inset 0 -5px 10px rgba(0,0,0,0.05); margin-bottom: 20px; animation: float 6s infinite ease-in-out; }
+        .sentence { font-size: 1.6rem; color: #555; margin-bottom: 30px; font-weight: bold; }
+        .choices { display: grid; gap: 18px; }
+        .btn-choice {
+          padding: 20px; font-size: 1.8rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
+          box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.2);
+          font-family: 'Mochiy+Pop+One', sans-serif; transition: all 0.1s;
+          border: 2px solid rgba(255,255,255,0.5);
+        }
+        .btn-choice:active { transform: translateY(6px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
         .color-0 { background: linear-gradient(to bottom, #ff9a9e, #fecfef); }
         .color-1 { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); }
         .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
         
-        .btn-back { margin-top: 30px; background: none; border: none; color: #aaa; font-weight: bold; text-decoration: underline; cursor: pointer; }
-        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; z-index: 100; pointer-events: none; }
+        .btn-back { margin-top: 30px; background: rgba(255,255,255,0.5); border: none; color: #ff69b4; font-weight: bold; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 7rem; z-index: 100; pointer-events: none; text-shadow: 3px 3px 0 #fff, 5px 5px 15px rgba(0,0,0,0.3); }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
 
-        .clear-card { border-color: #ffd700; }
-        .finish-title { font-size: 2rem; color: #ff69b4; font-weight: bold; margin-bottom: 20px; }
-        .finish-icon { font-size: 5rem; margin: 20px 0; }
-        .btn-restart { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); box-shadow: 0 6px 0 #89b0e5; width: 100%; font-size: 1.5rem; border-radius: 50px; color: white; border: none; padding: 15px; font-weight: bold; }
+        .finish-title { font-size: 2.5rem; margin-bottom: 20px; }
+        .finish-icon { font-size: 6rem; margin: 20px 0; }
+        .finish-message { font-size: 1.6rem; color: #555; font-weight: bold; line-height: 1.8; }
+        .btn-restart { background: linear-gradient(to bottom, #ff758c, #ff7eb3); box-shadow: 0 8px 0 #e65a70, 0 15px 25px rgba(255, 117, 140, 0.4); width: 100%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; padding: 20px; font-weight: bold; margin-top: 30px; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer; transition: all 0.1s; }
+        .btn-restart:active { transform: translateY(8px); box-shadow: 0 0 0 #e65a70; }
+        .confetti { position: absolute; top: -50px; left: 0; width: 100%; font-size: 4rem; animation: fall 3s linear infinite; z-index: -1; opacity: 0.7; }
+
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
       `}</style>
     </div>
   );
