@@ -84,7 +84,6 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "雨（あめ）が　ふってきた。" }
 ];
 
-// マイクラ風キャラクターデータ
 const mcCharacters = [
   { name: "スティーブ", emoji: "👤", color: "#2dcedf" },
   { name: "クリーパー", emoji: "💣", color: "#4caf50" },
@@ -152,9 +151,10 @@ function App() {
     if (ans === currentQ.yomi) {
       playCorrectSound();
       setIsCorrect(true);
+      
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        // 10問ごとにご褒美
+        // 【修正ポイント】ここで確実に条件分岐を行い、ご褒美か次問かを決定します
         if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < 80) {
           setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
           setIsCorrect(null);
@@ -165,7 +165,7 @@ function App() {
         } else {
           setIsFinished(true);
         }
-      }, 500);
+      }, 600);
     } else {
       playIncorrectSound();
       setIsCorrect(false);
@@ -173,11 +173,12 @@ function App() {
     }
   };
 
+  // 【重要】なかまになった画面
   if (rewardChar) {
     return (
       <div className="kanji-container reward-view">
         <div className="card reward-card" style={{borderColor: rewardChar.color}}>
-          <div className="mc-title">なかまに　なった！</div>
+          <div className="mc-title">🎉 なかまに　なった！ 🎉</div>
           <div className="mc-char-box" style={{backgroundColor: rewardChar.color}}>
             <span className="mc-emoji">{rewardChar.emoji}</span>
           </div>
@@ -187,22 +188,22 @@ function App() {
               const nextIdx = currentIndex + 1;
               setCurrentIndex(nextIdx);
               makeChoices(shuffledList[nextIdx]);
-              setRewardChar(null);
+              setRewardChar(null); // ここでリセットしてクイズに戻る
             }} 
             className="btn-mc"
           >
-            つぎへ　すすむ！
+            つぎの　もんだいへ！
           </button>
         </div>
         <style>{`
-          .reward-view { background: #333 !important; }
-          .reward-card { border: 8px solid; background: #fff !important; border-radius: 0 !important; }
-          .mc-title { font-size: 2rem; color: #444; font-weight: bold; margin-bottom: 20px; }
-          .mc-char-box { width: 150px; height: 150px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; border: 4px solid #000; box-shadow: 10px 10px 0 rgba(0,0,0,0.1); }
-          .mc-emoji { font-size: 5rem; }
-          .mc-name { font-size: 2rem; font-weight: bold; color: #333; margin-bottom: 30px; }
-          .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 15px; font-size: 1.5rem; font-weight: bold; box-shadow: 6px 6px 0 #1b5e20; cursor: pointer; }
-          .btn-mc:active { transform: translate(4px, 4px); box-shadow: none; }
+          .reward-view { background: #1e1e1e !important; }
+          .reward-card { border: 10px solid; background: white !important; border-radius: 0 !important; max-width: 400px; padding: 40px 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
+          .mc-title { font-size: 2.2rem; color: #333; font-weight: bold; margin-bottom: 30px; }
+          .mc-char-box { width: 160px; height: 160px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; border: 6px solid #000; box-shadow: 12px 12px 0 rgba(0,0,0,0.2); }
+          .mc-emoji { font-size: 6rem; }
+          .mc-name { font-size: 2.4rem; font-weight: bold; color: #333; margin-bottom: 40px; }
+          .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 20px 40px; font-size: 1.8rem; font-weight: bold; box-shadow: 8px 8px 0 #1b5e20; cursor: pointer; border-radius: 0; width: 100%; }
+          .btn-mc:active { transform: translate(4px, 4px); box-shadow: 4px 4px 0 #1b5e20; }
         `}</style>
       </div>
     );
@@ -212,17 +213,18 @@ function App() {
     return (
       <div className="kanji-container finish-view">
         <div className="card finish-card">
-          <div className="finish-title">🎉 ぜんもんクリア！ 🎉</div>
-          <div className="finish-icon">🏆🌸✨</div>
-          <p className="finish-message">80この　かんじを<br/>ぜーんぶ　マスターしたね！<br/>ほんとうに　すごい！</p>
-          <button onClick={startQuiz} className="btn-restart">もういっかい！</button>
+          <div className="finish-title">👑 ぜんもんクリア！ 👑</div>
+          <div className="finish-icon">💎🐲🔥</div>
+          <p className="finish-message">80この　かんじを<br/>ぜーんぶ　マスターしたね！<br/>キミは　マイクラマスターだ！</p>
+          <button onClick={startQuiz} className="btn-restart">はじめから　やる</button>
         </div>
         <style>{`
-          .finish-view { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); }
-          .finish-card { border: 6px dashed #ff9a9e; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
-          .finish-title { font-size: 2.2rem; color: #ff69b4; font-weight: bold; margin-bottom: 20px; }
-          .finish-icon { font-size: 5rem; margin: 20px 0; animation: bounce 2s infinite; }
-          .btn-restart { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); box-shadow: 0 6px 0 #89b0e5; width: 80%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; cursor: pointer; }
+          .finish-view { background: linear-gradient(135deg, #2c3e50, #000); }
+          .finish-card { border: 8px solid #ffd700; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
+          .finish-title { font-size: 2.5rem; color: #b8860b; font-weight: bold; margin-bottom: 20px; }
+          .finish-icon { font-size: 6rem; margin: 25px 0; animation: bounce 2s infinite; }
+          .finish-message { font-size: 1.6rem; color: #444; line-height: 1.8; margin-bottom: 35px; }
+          .btn-restart { background: #ffd700; color: #000; border: 4px solid #b8860b; padding: 20px; font-size: 1.8rem; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; }
           @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         `}</style>
       </div>
@@ -235,7 +237,7 @@ function App() {
   return (
     <div className="kanji-container">
       <div className="card">
-        <div className="header">🎀 かんけん10きゅう 🎀</div>
+        <div className="header">🌸 かんけん10きゅう 🌸</div>
         <div className="progress-bar">
           <span className="progress-text">80もんじゅう {currentIndex + 1}もんめ</span>
           <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 80) * 100}%`}}></div>
@@ -245,7 +247,7 @@ function App() {
         <div className="choices">
           {choices.map((c, i) => (
             <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>
-              {i === 0 ? '🌸' : i === 1 ? '✨' : '🍬'} {c}
+              {c}
             </button>
           ))}
         </div>
