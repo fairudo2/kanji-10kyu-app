@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級（1年生）全80文字データ：読み・例文・文脈をすべて精査・修正済み
+// 漢検10級全80文字データ（精査済み）
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "一（いち）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　二（に）こ　ある。" },
@@ -84,41 +84,47 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "雨（あめ）が　ふってきた。" }
 ];
 
+// マイクラ風キャラクターデータ
+const mcCharacters = [
+  { name: "スティーブ", emoji: "👤", color: "#2dcedf" },
+  { name: "クリーパー", emoji: "💣", color: "#4caf50" },
+  { name: "アレックス", emoji: "👱‍♀️", color: "#ff9800" },
+  { name: "エンダーマン", emoji: "👁️", color: "#212121" },
+  { name: "ぶた", emoji: "🐷", color: "#f48fb1" },
+  { name: "ひつじ", emoji: "🐑", color: "#f5f5f5" },
+  { name: "ゾンビ", emoji: "🧟", color: "#388e3c" },
+  { name: "スケルトン", emoji: "💀", color: "#e0e0e0" }
+];
+
 function App() {
   const [shuffledList, setShuffledList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [choices, setChoices] = useState([]);
   const [isCorrect, setIsCorrect] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
+  const [rewardChar, setRewardChar] = useState(null);
 
-  // 音を出すための設定
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   const playCorrectSound = () => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // ラ(A5)
-    osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1); // ミ(E6)
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.3);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
   };
 
   const playIncorrectSound = () => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.5);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
   };
 
   const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
@@ -128,6 +134,7 @@ function App() {
     setShuffledList(list);
     setCurrentIndex(0);
     setIsFinished(false);
+    setRewardChar(null);
     makeChoices(list[0]);
   };
 
@@ -136,21 +143,22 @@ function App() {
   const makeChoices = (question) => {
     if (!question) return;
     const correctYomi = question.yomi;
-    const otherYomis = allYomis
-      .filter(y => y !== correctYomi)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
+    const otherYomis = allYomis.filter(y => y !== correctYomi).sort(() => Math.random() - 0.5).slice(0, 2);
     setChoices([correctYomi, ...otherYomis].sort(() => Math.random() - 0.5));
   };
 
   const handleAnswer = (ans) => {
     const currentQ = shuffledList[currentIndex];
     if (ans === currentQ.yomi) {
-      playCorrectSound(); // 正解音！
+      playCorrectSound();
       setIsCorrect(true);
       setTimeout(() => {
-        if (currentIndex + 1 < shuffledList.length) {
-          const nextIdx = currentIndex + 1;
+        const nextIdx = currentIndex + 1;
+        // 10問ごとにご褒美
+        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < 80) {
+          setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
+          setIsCorrect(null);
+        } else if (nextIdx < 80) {
           setCurrentIndex(nextIdx);
           makeChoices(shuffledList[nextIdx]);
           setIsCorrect(null);
@@ -159,29 +167,62 @@ function App() {
         }
       }, 500);
     } else {
-      playIncorrectSound(); // 不正解音…
+      playIncorrectSound();
       setIsCorrect(false);
       setTimeout(() => setIsCorrect(null), 1000);
     }
   };
+
+  if (rewardChar) {
+    return (
+      <div className="kanji-container reward-view">
+        <div className="card reward-card" style={{borderColor: rewardChar.color}}>
+          <div className="mc-title">なかまに　なった！</div>
+          <div className="mc-char-box" style={{backgroundColor: rewardChar.color}}>
+            <span className="mc-emoji">{rewardChar.emoji}</span>
+          </div>
+          <div className="mc-name">{rewardChar.name}</div>
+          <button 
+            onClick={() => {
+              const nextIdx = currentIndex + 1;
+              setCurrentIndex(nextIdx);
+              makeChoices(shuffledList[nextIdx]);
+              setRewardChar(null);
+            }} 
+            className="btn-mc"
+          >
+            つぎへ　すすむ！
+          </button>
+        </div>
+        <style>{`
+          .reward-view { background: #333 !important; }
+          .reward-card { border: 8px solid; background: #fff !important; border-radius: 0 !important; }
+          .mc-title { font-size: 2rem; color: #444; font-weight: bold; margin-bottom: 20px; }
+          .mc-char-box { width: 150px; height: 150px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; border: 4px solid #000; box-shadow: 10px 10px 0 rgba(0,0,0,0.1); }
+          .mc-emoji { font-size: 5rem; }
+          .mc-name { font-size: 2rem; font-weight: bold; color: #333; margin-bottom: 30px; }
+          .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 15px; font-size: 1.5rem; font-weight: bold; box-shadow: 6px 6px 0 #1b5e20; cursor: pointer; }
+          .btn-mc:active { transform: translate(4px, 4px); box-shadow: none; }
+        `}</style>
+      </div>
+    );
+  }
 
   if (isFinished) {
     return (
       <div className="kanji-container finish-view">
         <div className="card finish-card">
           <div className="finish-title">🎉 ぜんもんクリア！ 🎉</div>
-          <div className="finish-icon">🦄🌸✨</div>
+          <div className="finish-icon">🏆🌸✨</div>
           <p className="finish-message">80この　かんじを<br/>ぜーんぶ　マスターしたね！<br/>ほんとうに　すごい！</p>
           <button onClick={startQuiz} className="btn-restart">もういっかい！</button>
         </div>
         <style>{`
           .finish-view { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); }
-          .finish-card { border: 6px dashed #ff9a9e; background: rgba(255,255,255,0.95); animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+          .finish-card { border: 6px dashed #ff9a9e; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
           .finish-title { font-size: 2.2rem; color: #ff69b4; font-weight: bold; margin-bottom: 20px; }
           .finish-icon { font-size: 5rem; margin: 20px 0; animation: bounce 2s infinite; }
-          .finish-message { font-size: 1.5rem; color: #555; line-height: 1.6; margin-bottom: 30px; }
-          .btn-restart { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); box-shadow: 0 6px 0 #89b0e5; width: 80%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; cursor: pointer; font-weight: bold; }
-          @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+          .btn-restart { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); box-shadow: 0 6px 0 #89b0e5; width: 80%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; cursor: pointer; }
           @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         `}</style>
       </div>
@@ -199,9 +240,7 @@ function App() {
           <span className="progress-text">80もんじゅう {currentIndex + 1}もんめ</span>
           <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 80) * 100}%`}}></div>
         </div>
-        <div className="kanji-box-wrapper">
-          <div className="kanji-box">{q.kanji}</div>
-        </div>
+        <div className="kanji-box">{q.kanji}</div>
         <div className="sentence">{q.sentence}</div>
         <div className="choices">
           {choices.map((c, i) => (
@@ -216,60 +255,21 @@ function App() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&display=swap');
-        .kanji-container {
-          background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb);
-          background-size: 400% 400%;
-          animation: gradientBG 15s ease infinite;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          font-family: 'Kiwi Maru', sans-serif;
-        }
-        .card {
-          background: #fffef0;
-          border-radius: 40px;
-          padding: 30px 25px;
-          width: 100%;
-          max-width: 480px;
-          box-shadow: 0 15px 35px rgba(255, 105, 180, 0.2);
-          text-align: center;
-          border: 4px dashed #ffb6c1;
-          position: relative;
-        }
+        .kanji-container { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'Kiwi Maru', sans-serif; }
+        .card { background: #fffef0; border-radius: 40px; padding: 30px; width: 100%; max-width: 480px; box-shadow: 0 15px 35px rgba(255,105,180,0.2); text-align: center; border: 4px dashed #ffb6c1; }
         .header { color: #ff69b4; font-weight: bold; font-size: 1.3rem; margin-bottom: 15px; }
-        .progress-bar {
-          background: #ffe4e1;
-          border-radius: 25px;
-          height: 25px;
-          position: relative;
-          overflow: hidden;
-          margin-bottom: 25px;
-        }
-        .progress-text {
-          position: absolute; width: 100%; top: 0; left: 0; line-height: 25px; font-size: 0.9rem; font-weight: bold; color: #d66b8a; z-index: 2;
-        }
-        .progress-gauge {
-          height: 100%; background: linear-gradient(to right, #ff9a9e, #fad0c4); transition: width 0.3s ease;
-        }
-        .kanji-box {
-          font-size: 8rem; font-weight: bold; border-radius: 30%; background: #fff1b8; padding: 20px; color: #ff8c00;
-          box-shadow: 0 10px 20px rgba(255, 165, 0, 0.2); margin-bottom: 20px;
-        }
+        .progress-bar { background: #ffe4e1; border-radius: 25px; height: 25px; position: relative; overflow: hidden; margin-bottom: 25px; }
+        .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 25px; font-size: 0.9rem; font-weight: bold; color: #d66b8a; z-index: 2; }
+        .progress-gauge { height: 100%; background: linear-gradient(to right, #ff9a9e, #fad0c4); transition: width 0.3s ease; }
+        .kanji-box { font-size: 8rem; font-weight: bold; border-radius: 30%; background: #fff1b8; padding: 20px; color: #ff8c00; box-shadow: 0 10px 20px rgba(255,165,0,0.2); margin-bottom: 20px; }
         .sentence { font-size: 1.5rem; color: #555; margin-bottom: 30px; font-weight: bold; }
         .choices { display: grid; gap: 15px; }
-        .btn-choice {
-          padding: 18px; font-size: 1.6rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
-          font-family: 'Kiwi Maru', sans-serif; box-shadow: 0 6px 0 rgba(0,0,0,0.1); transition: 0.1s;
-        }
-        .btn-choice:active { transform: translateY(4px); box-shadow: none; }
+        .btn-choice { padding: 18px; font-size: 1.6rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.1); }
         .color-0 { background: linear-gradient(to bottom, #ff9a9e, #fecfef); }
         .color-1 { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); }
         .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
         .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; z-index: 100; pointer-events: none; }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
     </div>
   );
