@@ -3,22 +3,29 @@ import React, { useState, useEffect } from 'react';
 // 漢検10級全80文字データ
 const kanji80 = "一二三四五六七八九十百千上下左右中大小月日火水木金土山川田石花草林森竹虫貝犬足手目耳口力人子女男名正生立休出入見音学校文字早夕空気天赤青白糸車町村王玉円先年雨".split("");
 
-// ステージごとの詳細データ（全80文字を10問ずつ8ステージに分ける）
+// ステージごとの詳細データ
 const getQuestions = (type, subIdx) => {
   const start = subIdx * 10;
   const chars = kanji80.slice(start, start + 10);
   
   return chars.map((k, i) => {
     switch(type) {
-      case 1: // ステージ1: よみ（文）
+      case 1: // よみ（文）
         return { k, a: "よみ", s: "（　）の　かんじを　よもう。" };
-      case 2: // ステージ2: かきじゅん（筆順）
-        // 漢字ごとに赤い線の位置（paths）を変える。
-        // ここでは全漢字に対応するため、漢字を背景に置き、赤い線を重ねる仕組みにします
-        return { k, a: (i % 3 + 1).toString(), s: "あかい　せんは　なんばんめ？", targetLine: i % 3 };
-      case 3: // ステージ3: ことば（熟語・送り仮名）
+      case 2: // かきじゅん（筆順）
+        // 問題とする画の「書き始め」の位置に赤い丸を表示するための座標データ
+        // ※本来は全漢字・全画数分の正確な座標データが必要です。ここではサンプルとして中央付近に表示します。
+        const targetPoint = { x: 50 + (i % 3 - 1) * 20, y: 30 + (i % 3) * 20 };
+        
+        return { 
+          k, 
+          a: (i % 3 + 1).toString(), // 暫定的な正解（実際は漢字データに基づく）
+          s: "あかい　まるの　ところから　かく　せんは　なんばんめ？", 
+          targetPoint // 赤い丸の座標データ
+        };
+      case 3: // ことば（熟語）
         return { k, a: "よみ", s: "ことばの　よみを　えらぼう。" };
-      case 4: // ステージ4: かき（書き取り）
+      case 4: // かき（書き取り）
         return { k, a: k, s: "（　）に　あてはまる　かんじは？" };
       default: return {};
     }
@@ -107,8 +114,13 @@ function App() {
               <div className="kanji-stack">
                 <div className="kanji-base">{questions[idx].k}</div>
                 <svg viewBox="0 0 100 100" className="kanji-overlay">
-                  {/* 簡易的な赤い線を漢字の上に重ねる（一例） */}
-                  <line x1="20" y1={30 + (questions[idx].targetLine * 20)} x2="80" y2={30 + (questions[idx].targetLine * 20)} className="red-line" />
+                  {/* 赤い線ではなく、赤い丸印（ポインター）を表示 */}
+                  <circle 
+                    cx={questions[idx].targetPoint.x} 
+                    cy={questions[idx].targetPoint.y} 
+                    r="6" 
+                    className="red-pointer" 
+                  />
                 </svg>
               </div>
             ) : (
@@ -145,12 +157,13 @@ function App() {
         .display-area { background: #fff1b8; border-radius: 30px; margin: 15px 0; padding: 15px; height: 180px; display: flex; justify-content: center; align-items: center; position: relative; }
         .kanji-text { font-size: 7rem; color: #ff8c00; }
         
-        /* 筆順の重ね合わせ用スタイル */
         .kanji-stack { position: relative; width: 150px; height: 150px; }
-        .kanji-base { font-size: 7rem; color: #ffe0b2; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; }
+        .kanji-base { font-size: 7rem; color: #ffe0b2; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; font-family: serif; /* フォントを明朝体などに固定すると位置が安定しやすい */ }
         .kanji-overlay { position: absolute; top: 0; left: 0; width: 150px; height: 150px; z-index: 2; }
-        .red-line { stroke: #ff4757; stroke-width: 12; stroke-linecap: round; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        
+        /* 赤い丸印（ポインター）のスタイル */
+        .red-pointer { fill: #ff4757; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { r: 6; opacity: 0.8; } 50% { r: 9; opacity: 0.4; } 100% { r: 6; opacity: 0.8; } }
 
         .sentence { font-size: 1.2rem; margin-bottom: 20px; font-weight: bold; height: 3rem; }
         .choices { display: grid; gap: 10px; }
