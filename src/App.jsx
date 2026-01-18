@@ -1,87 +1,86 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ（精査済み）
+// 漢検10級全80文字データ：問題文から答え（読み）を完全に隠しました！
 const kanjiList = [
-  { kanji: "一", yomi: "いち", sentence: "一（いち）ねんせいに　なる。" },
-  { kanji: "二", yomi: "に", sentence: "みかんが　二（に）こ　ある。" },
-  { kanji: "三", yomi: "さん", sentence: "三（さん）にんで　あそぶ。" },
-  { kanji: "四", yomi: "よん", sentence: "四（よん）ひきの　ねこ。" },
-  { kanji: "五", yomi: "ご", sentence: "五（ご）にんの　こども。" },
-  { kanji: "六", yomi: "ろく", sentence: "六（ろく）にんで　はしる。" },
-  { kanji: "七", yomi: "なな", sentence: "七（なな）色の　にじ。" },
-  { kanji: "八", yomi: "はち", sentence: "八（はち）にんの　かぞく。" },
-  { kanji: "九", yomi: "く", sentence: "九（く）がつに　なった。" },
-  { kanji: "十", yomi: "じゅう", sentence: "十（じゅう）円だま。" },
-  { kanji: "百", yomi: "ひゃく", sentence: "百（ひゃく）点を　とった！" },
-  { kanji: "千", yomi: "せん", sentence: "千（せん）円　もらった。" },
-  { kanji: "上", yomi: "うえ", sentence: "つくえの　上（うえ）を見る。" },
-  { kanji: "下", yomi: "した", sentence: "つくえの　下（した）を見る。" },
-  { kanji: "左", yomi: "ひだり", sentence: "左（ひだり）に　まがる。" },
-  { kanji: "右", yomi: "みぎ", sentence: "右（みぎ）の　て。" },
-  { kanji: "中", yomi: "なか", sentence: "はこの　中（なか）を　見る。" },
-  { kanji: "大", yomi: "だい", sentence: "大（だい）すきな　おやつ。" },
-  { kanji: "小", yomi: "しょう", sentence: "小（しょう）がっこうに　いく。" },
-  { kanji: "月", yomi: "つき", sentence: "お月（つき）さまが　出る。" },
-  { kanji: "日", yomi: "ひ", sentence: "お日（ひ）さまが　のぼる。" },
-  { kanji: "火", yomi: "ひ", sentence: "火（ひ）が　もえている。" },
-  { kanji: "水", yomi: "みず", sentence: "水（みず）を　のむ。" },
-  { kanji: "木", yomi: "き", sentence: "木（き）に　のぼる。" },
-  { kanji: "金", yomi: "きん", sentence: "金（きん）メダルだ！" },
-  { kanji: "土", yomi: "つち", sentence: "土（つち）あそびを　する。" },
-  { kanji: "山", yomi: "やま", sentence: "高い　山（やま）に　のぼる。" },
-  { kanji: "川", yomi: "かわ", sentence: "川（かわ）で　およぐ。" },
-  { kanji: "田", yomi: "た", sentence: "田（た）んぼに　いく。" },
-  { kanji: "石", yomi: "いし", sentence: "石（いし）を　ひろう。" },
-  { kanji: "花", yomi: "はな", sentence: "きれいな　花（はな）が　さく。" },
-  { kanji: "草", yomi: "くさ", sentence: "草（くさ）を　むしる。" },
-  { kanji: "林", yomi: "はやし", sentence: "林（はやし）の中を　あるく。" },
-  { kanji: "森", yomi: "もり", sentence: "森（もり）に　いく。" },
-  { kanji: "竹", yomi: "たけ", sentence: "竹（たけ）やぶが　ある。" },
-  { kanji: "虫", yomi: "むし", sentence: "虫（むし）とりを　する。" },
-  { kanji: "貝", yomi: "かい", sentence: "うみで　貝（かい）を　ひろう。" },
-  { kanji: "犬", yomi: "いぬ", sentence: "犬（いぬ）が　ほえる。" },
-  { kanji: "足", yomi: "あし", sentence: "足（あし）が　はやい。" },
-  { kanji: "手", yomi: "て", sentence: "手（て）を　あらう。" },
-  { kanji: "目", yomi: "め", sentence: "目（め）を　あける。" },
-  { kanji: "耳", yomi: "みみ", sentence: "耳（みみ）で　きく。" },
-  { kanji: "口", yomi: "くち", sentence: "口（くち）を　大きく　あける。" },
-  { kanji: "力", yomi: "ちから", sentence: "力（ちから）もち。" },
-  { kanji: "人", yomi: "ひと", sentence: "人（ひと）が　あつまる。" },
-  { kanji: "子", yomi: "こ", sentence: "女の子（こ）。" },
-  { kanji: "女", yomi: "おんな", sentence: "女（おんな）の　こ。" },
-  { kanji: "男", yomi: "おとこ", sentence: "男（おとこ）の　こ。" },
-  { kanji: "名", yomi: "な", sentence: "お名（な）まえを　かく。" },
-  { kanji: "正", yomi: "せい", sentence: "正（せい）かいです！" },
-  { kanji: "生", yomi: "せい", sentence: "一ねん生（せい）。" },
-  { kanji: "立", yomi: "た", sentence: "立（た）ってください。" },
-  { kanji: "休", yomi: "やす", sentence: "休（やす）みの　ひ。" },
-  { kanji: "出", yomi: "で", sentence: "おもてに　出（で）る。" },
-  { kanji: "入", yomi: "はい", sentence: "おふろに　入（はい）る。" },
-  { kanji: "見", yomi: "み", sentence: "ゆめを　見（み）る。" },
-  { kanji: "音", yomi: "おと", sentence: "ピアノの　音（おと）。" },
-  { kanji: "学", yomi: "がっ", sentence: "学（がっ）こうに　いく。" },
-  { kanji: "校", yomi: "こう", sentence: "がっ校（こう）の　ていえん。" },
-  { kanji: "文", yomi: "ぶん", sentence: "さく文（ぶん）を　かく。" },
-  { kanji: "字", yomi: "じ", sentence: "きれいな　字（じ）。" },
-  { kanji: "早", yomi: "はや", sentence: "早（はや）く　おきる。" },
-  { kanji: "夕", yomi: "ゆう", sentence: "夕（ゆう）やけが　きれい。" },
-  { kanji: "空", yomi: "そら", sentence: "空（そら）が　あおい。" },
-  { kanji: "気", yomi: "き", sentence: "元気が　ある（き）。" },
-  { kanji: "天", yomi: "てん", sentence: "天（てん）きが　いい。" },
-  { kanji: "赤", yomi: "あか", sentence: "赤（あか）い　りんご。" },
-  { kanji: "青", yomi: "あお", sentence: "青（あお）い　そら。" },
-  { kanji: "白", yomi: "しろ", sentence: "白（しろ）い　くも。" },
-  { kanji: "糸", yomi: "いと", sentence: "糸（いと）を　とおす。" },
-  { kanji: "車", yomi: "くるま", sentence: "車（くるま）に　のる。" },
-  { kanji: "町", yomi: "まち", sentence: "おとなりの　町（まち）。" },
-  { kanji: "村", yomi: "むら", sentence: "村（むら）の　おまつり。" },
-  { kanji: "王", yomi: "おう", sentence: "ライオンは　百じゅうの王（おう）。" },
-  { kanji: "玉", yomi: "たま", sentence: "玉（たま）いれを　する。" },
-  { kanji: "円", yomi: "えん", sentence: "百（円）だま。" },
-  { kanji: "先", yomi: "せん", sentence: "お先（せん）に　どうぞ。" },
-  { kanji: "年", yomi: "とし", sentence: "お年（とし）だま。" },
-  { kanji: "左", yomi: "ひだり", sentence: "左（ひだり）を　むく。" },
-  { kanji: "雨", yomi: "あめ", sentence: "雨（あめ）が　ふってきた。" }
+  { kanji: "一", yomi: "いち", sentence: "（　）ねんせいに　なる。" },
+  { kanji: "二", yomi: "に", sentence: "みかんが　（　）こ　ある。" },
+  { kanji: "三", yomi: "さん", sentence: "（　）にんで　あそぶ。" },
+  { kanji: "四", yomi: "よん", sentence: "（　）ひきの　ねこ。" },
+  { kanji: "五", yomi: "ご", sentence: "（　）にんの　こども。" },
+  { kanji: "六", yomi: "ろく", sentence: "（　）にんで　はしる。" }, // image_6e44eb.png の箇所を修正
+  { kanji: "七", yomi: "なな", sentence: "（　）色の　にじ。" },
+  { kanji: "八", yomi: "はち", sentence: "（　）にんの　かぞく。" },
+  { kanji: "九", yomi: "く", sentence: "（　）がつに　なった。" },
+  { kanji: "十", yomi: "じゅう", sentence: "（　）円だま。" },
+  { kanji: "百", yomi: "ひゃく", sentence: "（　）点を　とった！" },
+  { kanji: "千", yomi: "せん", sentence: "（　）円　もらった。" },
+  { kanji: "上", yomi: "うえ", sentence: "つくえの　（　）を見る。" },
+  { kanji: "下", yomi: "した", sentence: "つくえの　（　）を見る。" },
+  { kanji: "左", yomi: "ひだり", sentence: "（　）に　まがる。" },
+  { kanji: "右", yomi: "みぎ", sentence: "（　）の　て。" },
+  { kanji: "中", yomi: "なか", sentence: "はこの　（　）を　見る。" },
+  { kanji: "大", yomi: "だい", sentence: "（　）すきな　おやつ。" },
+  { kanji: "小", yomi: "しょう", sentence: "（　）がっこうに　いく。" },
+  { kanji: "月", yomi: "つき", sentence: "お月（　）さまが　出る。" },
+  { kanji: "日", yomi: "ひ", sentence: "お日（　）さまが　のぼる。" },
+  { kanji: "火", yomi: "ひ", sentence: "（　）が　もえている。" },
+  { kanji: "水", yomi: "みず", sentence: "（　）を　のむ。" },
+  { kanji: "木", yomi: "き", sentence: "（　）に　のぼる。" },
+  { kanji: "金", yomi: "きん", sentence: "（　）メダルだ！" },
+  { kanji: "土", yomi: "つち", sentence: "（　）あそびを　する。" },
+  { kanji: "山", yomi: "やま", sentence: "高い　（　）に　のぼる。" },
+  { kanji: "川", yomi: "かわ", sentence: "（　）で　およぐ。" },
+  { kanji: "田", yomi: "た", sentence: "（　）んぼに　いく。" },
+  { kanji: "石", yomi: "いし", sentence: "（　）を　ひろう。" },
+  { kanji: "花", yomi: "はな", sentence: "きれいな　（　）が　さく。" },
+  { kanji: "草", yomi: "くさ", sentence: "（　）を　むしる。" },
+  { kanji: "林", yomi: "はやし", sentence: "（　）の中を　あるく。" },
+  { kanji: "森", yomi: "もり", sentence: "（　）に　いく。" },
+  { kanji: "竹", yomi: "たけ", sentence: "（　）やぶが　ある。" },
+  { kanji: "虫", yomi: "むし", sentence: "（　）とりを　する。" },
+  { kanji: "貝", yomi: "かい", sentence: "うみで　（　）を　ひろう。" },
+  { kanji: "犬", yomi: "いぬ", sentence: "（　）が　ほえる。" },
+  { kanji: "足", yomi: "あし", sentence: "（　）が　はやい。" },
+  { kanji: "手", yomi: "て", sentence: "（　）を　あらう。" },
+  { kanji: "目", yomi: "め", sentence: "（　）を　あける。" },
+  { kanji: "耳", yomi: "みみ", sentence: "（　）で　きく。" },
+  { kanji: "口", yomi: "くち", sentence: "（　）を　大きく　あける。" },
+  { kanji: "力", yomi: "ちから", sentence: "（　）もち。" },
+  { kanji: "人", yomi: "ひと", sentence: "（　）が　あつまる。" },
+  { kanji: "子", yomi: "こ", sentence: "女の子（　）。" },
+  { kanji: "女", yomi: "おんな", sentence: "（　）の　こ。" },
+  { kanji: "男", yomi: "おとこ", sentence: "（　）の　こ。" },
+  { kanji: "名", yomi: "な", sentence: "お名（　）まえを　かく。" },
+  { kanji: "正", yomi: "せい", sentence: "（　）かいです！" },
+  { kanji: "生", yomi: "せい", sentence: "一ねん生（　）。" },
+  { kanji: "立", yomi: "た", sentence: "（　）ってください。" },
+  { kanji: "休", yomi: "やす", sentence: "（　）みの　ひ。" },
+  { kanji: "出", yomi: "で", sentence: "おもてに　（　）る。" },
+  { kanji: "入", yomi: "はい", sentence: "おふろに　（　）る。" },
+  { kanji: "見", yomi: "み", sentence: "ゆめを　（　）る。" },
+  { kanji: "音", yomi: "おと", sentence: "ピアノの　（　）。" },
+  { kanji: "学", yomi: "がっ", sentence: "（　）こうに　いく。" },
+  { kanji: "校", yomi: "こう", sentence: "がっ（　）の　ていえん。" },
+  { kanji: "文", yomi: "ぶん", sentence: "さく（　）を　かく。" },
+  { kanji: "字", yomi: "じ", sentence: "きれいな　（　）。" },
+  { kanji: "早", yomi: "はや", sentence: "（　）く　おきる。" },
+  { kanji: "夕", yomi: "ゆう", sentence: "（　）やけが　きれい。" },
+  { kanji: "空", yomi: "そら", sentence: "（　）が　あおい。" },
+  { kanji: "気", yomi: "き", sentence: "元気が　ある（　）。" },
+  { kanji: "天", yomi: "てん", sentence: "（　）きが　いい。" },
+  { kanji: "赤", yomi: "あか", sentence: "（　）い　りんご。" },
+  { kanji: "青", yomi: "あお", sentence: "（　）い　そら。" },
+  { kanji: "白", yomi: "しろ", sentence: "（　）い　くも。" },
+  { kanji: "糸", yomi: "いと", sentence: "（　）を　とおす。" },
+  { kanji: "車", yomi: "くるま", sentence: "（　）に　のる。" },
+  { kanji: "町", yomi: "まち", sentence: "おとなりの　（　）。" },
+  { kanji: "村", yomi: "むら", sentence: "（　）の　おまつり。" },
+  { kanji: "王", yomi: "おう", sentence: "ライオンは　百じゅうの（　）。" },
+  { kanji: "玉", yomi: "たま", sentence: "（　）いれを　する。" },
+  { kanji: "円", yomi: "えん", sentence: "百（　）だま。" },
+  { kanji: "先", yomi: "せん", sentence: "お（　）に　どうぞ。" },
+  { kanji: "年", yomi: "とし", sentence: "お（　）だま。" },
+  { kanji: "雨", yomi: "あめ", sentence: "（　）が　ふってきた。" }
 ];
 
 const mcCharacters = [
@@ -147,18 +146,21 @@ function App() {
   };
 
   const handleAnswer = (ans) => {
+    if (isCorrect !== null || rewardChar || isFinished) return;
     const currentQ = shuffledList[currentIndex];
+    
     if (ans === currentQ.yomi) {
       playCorrectSound();
       setIsCorrect(true);
       
+      // 0.6秒後に判定
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        // 【修正ポイント】ここで確実に条件分岐を行い、ご褒美か次問かを決定します
-        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < 80) {
+        // 10問ごとのご褒美判定（確実にここでrewardCharをセットします）
+        if (nextIdx > 0 && nextIdx % 10 === 0 && nextIdx < shuffledList.length) {
           setRewardChar(mcCharacters[Math.floor(Math.random() * mcCharacters.length)]);
           setIsCorrect(null);
-        } else if (nextIdx < 80) {
+        } else if (nextIdx < shuffledList.length) {
           setCurrentIndex(nextIdx);
           makeChoices(shuffledList[nextIdx]);
           setIsCorrect(null);
@@ -173,7 +175,6 @@ function App() {
     }
   };
 
-  // 【重要】なかまになった画面
   if (rewardChar) {
     return (
       <div className="kanji-container reward-view">
@@ -188,7 +189,7 @@ function App() {
               const nextIdx = currentIndex + 1;
               setCurrentIndex(nextIdx);
               makeChoices(shuffledList[nextIdx]);
-              setRewardChar(null); // ここでリセットしてクイズに戻る
+              setRewardChar(null);
             }} 
             className="btn-mc"
           >
@@ -203,7 +204,6 @@ function App() {
           .mc-emoji { font-size: 6rem; }
           .mc-name { font-size: 2.4rem; font-weight: bold; color: #333; margin-bottom: 40px; }
           .btn-mc { background: #4caf50; color: white; border: 4px solid #1b5e20; padding: 20px 40px; font-size: 1.8rem; font-weight: bold; box-shadow: 8px 8px 0 #1b5e20; cursor: pointer; border-radius: 0; width: 100%; }
-          .btn-mc:active { transform: translate(4px, 4px); box-shadow: 4px 4px 0 #1b5e20; }
         `}</style>
       </div>
     );
@@ -223,9 +223,7 @@ function App() {
           .finish-card { border: 8px solid #ffd700; background: rgba(255,255,255,0.95); animation: popIn 0.5s; }
           .finish-title { font-size: 2.5rem; color: #b8860b; font-weight: bold; margin-bottom: 20px; }
           .finish-icon { font-size: 6rem; margin: 25px 0; animation: bounce 2s infinite; }
-          .finish-message { font-size: 1.6rem; color: #444; line-height: 1.8; margin-bottom: 35px; }
           .btn-restart { background: #ffd700; color: #000; border: 4px solid #b8860b; padding: 20px; font-size: 1.8rem; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; }
-          @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         `}</style>
       </div>
     );
