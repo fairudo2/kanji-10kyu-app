@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級 全80文字 データ完全修正版
-// 答えのネタバレを削除し、1年生向けの短い文章にしました。
+// 漢検10級 全80文字 データ（答えのネタバレなし・短文形式）
 const kanjiList = [
-  // --- ステージ1 (1-10) 数字 ---
+  // --- ステージ1 (1-10) ---
   { kanji: "一", yomi: "いち", sentence: "【一】ねんせいに　なる。", isMulti: true, q2: { s: "りんごが　【一】つ。", a: "ひと" } },
   { kanji: "二", yomi: "に", sentence: "【二】ねんせいに　なる。", isMulti: true, q2: { s: "みかんが　【二】つ。", a: "ふた" } },
   { kanji: "三", yomi: "さん", sentence: "【三】かくけいの　つみき。", isMulti: true, q2: { s: "おかしを　【三】つ　たべる。", a: "み" } },
@@ -15,7 +14,7 @@ const kanjiList = [
   { kanji: "九", yomi: "く", sentence: "【九】がつに　なる。", isMulti: true, q2: { s: "たまごが　【九】つ。", a: "ここの" } },
   { kanji: "十", yomi: "じゅう", sentence: "【十】えん　ひろう。", isMulti: true, q2: { s: "きょうは　【十】日。", a: "とお" } },
 
-  // --- ステージ2 (11-20) 大小・位置 ---
+  // --- ステージ2 (11-20) ---
   { kanji: "百", yomi: "ひゃく", sentence: "テストで　【百】てんを　とる。" },
   { kanji: "千", yomi: "せん", sentence: "【千】えんさつを　見る。" },
   { kanji: "上", yomi: "うえ", sentence: "つくえの　【上】に　おく。", isMulti: true, q2: { s: "【上】ぎを　きる。", a: "うわ" } },
@@ -27,7 +26,7 @@ const kanjiList = [
   { kanji: "小", yomi: "ちい", sentence: "【小】さい　あり。", isMulti: true, q2: { s: "【小】がっこうに　いく。", a: "しょう" } },
   { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】一日は　お正月。", a: "がつ" } },
 
-  // --- ステージ3 (21-30) 曜日・自然 ---
+  // --- ステージ3 (21-30) ---
   { kanji: "日", yomi: "ひ", sentence: "お【日】さまが　出ている。", isMulti: true, q2: { s: "あしたは　【日】ようび。", a: "にち" } },
   { kanji: "火", yomi: "ひ", sentence: "【火】が　もえている。", isMulti: true, q2: { s: "【火】ようびに　あそぶ。", a: "か" } },
   { kanji: "水", yomi: "みず", sentence: "つめたい　【水】。", isMulti: true, q2: { s: "【水】ようびは　早い。", a: "すい" } },
@@ -39,7 +38,7 @@ const kanjiList = [
   { kanji: "田", yomi: "た", sentence: "【田】んぼに　カエルがいる。", isMulti: true, q2: { s: "広い　水【田】。", a: "でん" } },
   { kanji: "石", yomi: "いし", sentence: "きれいな　【石】を　ひろう。" },
 
-  // --- ステージ4 (31-40) 自然・生き物 ---
+  // --- ステージ4 (31-40) ---
   { kanji: "花", yomi: "はな", sentence: "赤い　【花】が　さく。", isMulti: true, q2: { s: "【花】びんに　水を入れる。", a: "か" } },
   { kanji: "草", yomi: "くさ", sentence: "【草】を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "【林】の　中を　あるく。" },
@@ -51,7 +50,7 @@ const kanjiList = [
   { kanji: "足", yomi: "あし", sentence: "【足】が　はやい。", isMulti: true, q2: { s: "たのしい　えん【足】。", a: "そく" } },
   { kanji: "手", yomi: "て", sentence: "【手】を　あらう。" },
 
-  // --- ステージ5 (41-50) 体・人 ---
+  // --- ステージ5 (41-50) ---
   { kanji: "目", yomi: "め", sentence: "【目】が　いい。", isMulti: true, q2: { s: "【目】ひょうを　きめる。", a: "もく" } },
   { kanji: "耳", yomi: "みみ", sentence: "【耳】を　すます。" },
   { kanji: "口", yomi: "くち", sentence: "【口】を　あける。", isMulti: true, q2: { s: "いり【口】は　こちら。", a: "ぐち" } },
@@ -63,7 +62,7 @@ const kanjiList = [
   { kanji: "名", yomi: "な", sentence: "お【名】まえを　かく。", isMulti: true, q2: { s: "ゆう【名】な　え。", a: "めい" } },
   { kanji: "正", yomi: "ただ", sentence: "【正】しい　こたえ。", isMulti: true, q2: { s: "お【正】月に　もちをたべる。", a: "しょう" } },
 
-  // --- ステージ6 (51-60) 学校・動作 ---
+  // --- ステージ6 (51-60) ---
   { kanji: "生", yomi: "う", sentence: "あかちゃんが　【生】まれる。", isMulti: true, q2: { s: "先【生】、さようなら。", a: "せい" } },
   { kanji: "立", yomi: "た", sentence: "いすから　【立】つ。", isMulti: true, q2: { s: "こく【立】こうえん。", a: "りつ" } },
   { kanji: "休", yomi: "やす", sentence: "学校が　お【休】み。", isMulti: true, q2: { s: "【休】じつの　パパ。", a: "きゅう" } },
@@ -75,10 +74,10 @@ const kanjiList = [
   { kanji: "校", yomi: "こう", sentence: "学【校】で　あそぶ。", isMulti: true, q2: { s: "【校】ちょう先生。", a: "こう" } },
   { kanji: "文", yomi: "ぶん", sentence: "作【文】を　かく。", isMulti: true, q2: { s: "【文】字（もじ）。", a: "も" } },
 
-  // --- ステージ7 (61-70) 色・空 ---
+  // --- ステージ7 (61-70) ---
   { kanji: "字", yomi: "じ", sentence: "きれいな　【字】。" },
   { kanji: "早", yomi: "はや", sentence: "【早】く　ねる。", isMulti: true, q2: { s: "【早】ちょうに　おきる。", a: "そう" } },
-  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】の　かざり。", a: "ばた" } },
+  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】の　ささかざり。", a: "ばた" } },
   { kanji: "空", yomi: "そら", sentence: "青い　【空】。", isMulti: true, q2: { s: "【空】気を　すう。", a: "くう" } },
   { kanji: "気", yomi: "き", sentence: "元【気】な　こえ。", isMulti: true, q2: { s: "さむ【気】が　する。", a: "け" } },
   { kanji: "天", yomi: "てん", sentence: "いい　【天】気。", isMulti: true, q2: { s: "【天】のがわを　見る。", a: "あま" } },
@@ -87,7 +86,7 @@ const kanjiList = [
   { kanji: "白", yomi: "しろ", sentence: "【白】い　くも。", isMulti: true, q2: { s: "【白】ちょうが　およぐ。", a: "はく" } },
   { kanji: "糸", yomi: "いと", sentence: "【糸】を　きる。" },
 
-  // --- ステージ8 (71-80) 町・その他 ---
+  // --- ステージ8 (71-80) ---
   { kanji: "車", yomi: "くるま", sentence: "【車】に　気をつける。", isMulti: true, q2: { s: "電【車】が　はしる。", a: "しゃ" } },
   { kanji: "町", yomi: "まち", sentence: "【町】へ　いく。", isMulti: true, q2: { s: "下【町】を　あるく。", a: "まち" } },
   { kanji: "村", yomi: "むら", sentence: "【村】の　ひと。", isMulti: true, q2: { s: "【村】ちょうさんが　はなす。", a: "そん" } },
@@ -131,13 +130,11 @@ function App() {
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   };
 
-  // 記録のロード
   useEffect(() => {
     const saved = localStorage.getItem('kanken10_records');
     if (saved) setRecords(JSON.parse(saved));
   }, []);
 
-  // タイマー
   useEffect(() => {
     let timer;
     if (view === 'quiz' && startTime > 0) {
@@ -159,7 +156,7 @@ function App() {
     setCurrentIndex(0);
     setAnsA(null); setAnsB(null);
     setView('quiz');
-    setStartTime(Date.now()); // スタート時間記録
+    setStartTime(Date.now());
     setCurrentTime(0);
     makeChoices(list[0]);
   };
@@ -271,12 +268,23 @@ function App() {
             <div className="timer-badge">⏱️ {currentTime}</div>
           </div>
           
-          <div className="kanji-display">{stageList[currentIndex].kanji}</div>
+          {/* 修正：書きモードならひらがな(yomi)、読みモードなら漢字(kanji)を表示 */}
+          <div className="kanji-display">
+            {mode === 'read' ? stageList[currentIndex].kanji : stageList[currentIndex].yomi}
+          </div>
           
           <div className="question-area">
             <div className={`q-row ${ansA ? 'done' : ''}`}>
               <div className="sentence">
-                {stageList[currentIndex].sentence.split(/【|】/).map((p,i)=>i===1?<span className="glow-marker" key={i}>{p}</span>:p)}
+                {/* 修正：書きモードなら漢字部分を四角(⬜)に置換 */}
+                {stageList[currentIndex].sentence.split(/【|】/).map((p,i) => {
+                  if (i === 1) {
+                    return mode === 'read' 
+                      ? <span className="glow-marker" key={i}>{p}</span> 
+                      : <span className="blank-box" key={i}>⬜</span>;
+                  }
+                  return p;
+                })}
               </div>
               {mode === 'read' && (
                 <div className="choice-row">
@@ -339,6 +347,7 @@ function App() {
         .timer-badge { background: #fff; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #ff4757; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-family: 'Mochiy+Pop+One', sans-serif; }
 
         .glow-marker { background: linear-gradient(transparent 50%, rgba(255, 105, 180, 0.4) 50%); padding: 0 3px; font-weight: bold; color: #ff4757; font-size: 1.4rem; }
+        .blank-box { display: inline-block; width: 1.5em; height: 1.5em; background: #eee; border: 2px dashed #aaa; border-radius: 5px; vertical-align: middle; margin: 0 2px; }
         .kanji-display { font-size: 4rem; color: #ff8c00; background: #fff; border-radius: 20px; display: inline-block; padding: 0 25px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .question-area { background: #fff9fa; padding: 15px; border-radius: 25px; border: 2px solid #ffe4e1; text-align: left; }
         .q-row { transition: 0.3s; margin-bottom: 8px; }
