@@ -33,7 +33,7 @@ const kanjiList = [
   { kanji: "田", yomi: "た", sentence: "田（　）んぼに　いく。" },
   { kanji: "石", yomi: "いし", sentence: "石（　）を　ひろう。" },
   { kanji: "花", yomi: "はな", sentence: "きれいな　花（　）が　さく。" },
-  { kanji: "草", yomi: "くさ", sentence: "草（　）を　むむる。" },
+  { kanji: "草", yomi: "くさ", sentence: "草（　）を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "林（　）の中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "森（　）に　いく。" },
   { kanji: "竹", yomi: "たけ", sentence: "竹（　）やぶが　ある。" },
@@ -84,17 +84,28 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "雨（　）が　ふってきた。" }
 ];
 
-// 【追加】同一漢字の読み分け（スペシャルステージ用データ）
-// ターゲットにしたい漢字を 【 】 で囲む
-const specialReadingList = [
-  { kanji: "日", yomi: "にち", sentence: "【日】よう日は、いい　お日さま。" },
-  { kanji: "日", yomi: "び", sentence: "日よう【日】は、いい　お日さま。" },
-  { kanji: "一", yomi: "いち", sentence: "【一】年生の、りんごは　一つ。" },
-  { kanji: "一", yomi: "ひと", sentence: "一年生の、りんごは　【一】つ。" },
-  { kanji: "十", yomi: "じゅう", sentence: "【十】円を　もって、十日へ。" },
-  { kanji: "十", yomi: "とお", sentence: "十円を　もって、【十】日へ。" },
-  { kanji: "二", yomi: "に", sentence: "【二】年生は、みかんを　二つ。" },
-  { kanji: "二", yomi: "ふた", sentence: "二年生は、みかんを　【二】つ。" }
+// 【全網羅】同一漢字の読み分け（スペシャルステージ用）
+const specialReadingGroups = [
+  { kanji: "日", q1: { s: "【日】ようび", a: "にち" }, q2: { s: "にちよう【日】", a: "び" } },
+  { kanji: "日", q1: { s: "とお【日】", a: "か" }, q2: { s: "お【日】さま", a: "ひ" } },
+  { kanji: "一", q1: { s: "【一】ねんせい", a: "いち" }, q2: { s: "【一】つ", a: "ひと" } },
+  { kanji: "二", q1: { s: "【二】ねんせい", a: "に" }, q2: { s: "【二】つ", a: "ふた" } },
+  { kanji: "三", q1: { s: "【三】ねんせい", a: "さん" }, q2: { s: "【三】つ", a: "み" } },
+  { kanji: "四", q1: { s: "【四】ねんせい", a: "よん" }, q2: { s: "【四】つ", a: "よ" } },
+  { kanji: "五", q1: { s: "【五】ねんせい", a: "ご" }, q2: { s: "【五】つ", a: "いつ" } },
+  { kanji: "六", q1: { s: "【六】ねんせい", a: "ろく" }, q2: { s: "【六】つ", a: "む" } },
+  { kanji: "七", q1: { s: "【七】がつ", a: "しち" }, q2: { s: "【七】つ", a: "なな" } },
+  { kanji: "八", q1: { s: "【八】ねんせい", a: "はち" }, q2: { s: "【八】つ", a: "や" } },
+  { kanji: "九", q1: { s: "【九】がつ", a: "く" }, q2: { s: "【九】ねんせい", a: "きゅう" } },
+  { kanji: "十", q1: { s: "【十】円", a: "じゅう" }, q2: { s: "【十】日", a: "とお" } },
+  { kanji: "月", q1: { s: "一【月】", a: "がつ" }, q2: { s: "お【月】さま", a: "つき" } },
+  { kanji: "上", q1: { s: "つくえの【上】", a: "うえ" }, q2: { s: "【上】ず", a: "じょう" } },
+  { kanji: "下", q1: { s: "つくえの【下】", a: "した" }, q2: { s: "ろう【下】", a: "か" } },
+  { kanji: "大", q1: { s: "【大】きい", a: "おお" }, q2: { s: "【大】すき", a: "だい" } },
+  { kanji: "中", q1: { s: "はこの【中】", a: "なか" }, q2: { s: "【中】がっこう", a: "ちゅう" } },
+  { kanji: "人", q1: { s: "一【人】", a: "にん" }, q2: { s: "この【人】", a: "ひと" } },
+  { kanji: "生", q1: { s: "一ねん【生】", a: "せい" }, q2: { s: "【生】まれる", a: "う" } },
+  { kanji: "名", q1: { s: "お【名】まえ", a: "な" }, q2: { s: "【名】じん", a: "めい" } }
 ];
 
 function App() {
@@ -103,14 +114,16 @@ function App() {
   const [currentStage, setCurrentStage] = useState(0);
   const [stageList, setStageList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [choicesA, setChoicesA] = useState([]);
+  const [choicesB, setChoicesB] = useState([]);
+  const [ansA, setAnsA] = useState(null);
+  const [ansB, setAnsB] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
   const [clearedStagesRead, setClearedStagesRead] = useState([]);
   const [clearedStagesWrite, setClearedStagesWrite] = useState([]);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
   const playSound = (freq, type, duration) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -122,16 +135,12 @@ function App() {
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   };
 
-  const selectMode = (m) => {
-    setMode(m);
-    setView('stageSelect');
-  };
+  const selectMode = (m) => { setMode(m); setView('stageSelect'); };
 
   const selectStage = (stageIdx) => {
     let list;
     if (stageIdx === 8) {
-      // スペシャルステージ
-      list = [...specialReadingList].sort(() => Math.random() - 0.5);
+      list = [...specialReadingGroups].sort(() => Math.random() - 0.5);
     } else {
       const startIdx = stageIdx * 10;
       list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
@@ -139,98 +148,74 @@ function App() {
     setStageList(list);
     setCurrentStage(stageIdx);
     setCurrentIndex(0);
+    setAnsA(null); setAnsB(null);
     setView('quiz');
-    makeChoices(list[0], mode);
+    makeChoices(list[0], mode, stageIdx === 8);
   };
 
-  const makeChoices = (question, currentMode) => {
+  const makeChoices = (question, currentMode, isSpecial) => {
     if (!question) return;
-    const allYomis = Array.from(new Set([...kanjiList.map(k => k.yomi), ...specialReadingList.map(k => k.yomi)]));
-    const allKanjis = kanjiList.map(k => k.kanji);
+    const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
     
-    let correct, distractors;
-    if (currentMode === 'read') {
-      correct = question.yomi;
-      distractors = allYomis.filter(y => y !== correct).sort(() => Math.random() - 0.5).slice(0, 2);
+    if (isSpecial) {
+      const getC = (ans) => [ans, ...allYomis.filter(y => y !== ans).sort(() => Math.random() - 0.5).slice(0, 2)].sort(() => Math.random() - 0.5);
+      setChoicesA(getC(question.q1.a));
+      setChoicesB(getC(question.q2.a));
     } else {
-      correct = question.kanji;
-      distractors = allKanjis.filter(k => k !== correct).sort(() => Math.random() - 0.5).slice(0, 2);
+      let correct = currentMode === 'read' ? question.yomi : question.kanji;
+      let pool = currentMode === 'read' ? allYomis : kanjiList.map(k => k.kanji);
+      setChoicesA([correct, ...pool.filter(v => v !== correct).sort(() => Math.random() - 0.5).slice(0, 2)].sort(() => Math.random() - 0.5));
     }
-    setChoices([correct, ...distractors].sort(() => Math.random() - 0.5));
   };
 
-  const handleAnswer = (ans) => {
+  const handleAnswer = (ans, type) => {
     if (isCorrect !== null) return;
-    const currentQ = stageList[currentIndex];
-    const correctAns = mode === 'read' ? currentQ.yomi : currentQ.kanji;
-    
-    if (ans === correctAns) {
-      playSound(880, 'sine', 0.3);
+    const q = stageList[currentIndex];
+
+    if (currentStage === 8) {
+      if (type === 'A') {
+        if (ans === q.q1.a) { playSound(880, 'sine', 0.2); setAnsA(ans); }
+        else { playSound(220, 'sawtooth', 0.3); setIsCorrect(false); setTimeout(() => setIsCorrect(null), 800); }
+      } else {
+        if (ans === q.q2.a) { playSound(880, 'sine', 0.2); setAnsB(ans); }
+        else { playSound(220, 'sawtooth', 0.3); setIsCorrect(false); setTimeout(() => setIsCorrect(null), 800); }
+      }
+    } else {
+      const correctAns = mode === 'read' ? q.yomi : q.kanji;
+      if (ans === correctAns) { setAnsA(ans); }
+      else { playSound(220, 'sawtooth', 0.5); setIsCorrect(false); setTimeout(() => setIsCorrect(null), 1000); }
+    }
+  };
+
+  useEffect(() => {
+    if (currentStage === 8) {
+      if (ansA && ansB) {
+        setIsCorrect(true);
+        setTimeout(() => {
+          const nextIdx = currentIndex + 1;
+          if (nextIdx < stageList.length) {
+            setCurrentIndex(nextIdx); setAnsA(null); setAnsB(null); setIsCorrect(null);
+            makeChoices(stageList[nextIdx], mode, true);
+          } else { finish(); }
+        }, 800);
+      }
+    } else if (ansA) {
       setIsCorrect(true);
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        if (nextIdx < stageList.length) {
-          setCurrentIndex(nextIdx);
-          makeChoices(stageList[nextIdx], mode);
-          setIsCorrect(null);
-        } else {
-          if (mode === 'read') {
-            setClearedStagesRead(prev => Array.from(new Set([...prev, currentStage])));
-          } else {
-            setClearedStagesWrite(prev => Array.from(new Set([...prev, currentStage])));
-          }
-          setView('stageClear');
-          setIsCorrect(null);
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 3000);
-        }
+        if (nextIdx < 10) {
+          setCurrentIndex(nextIdx); setAnsA(null); setIsCorrect(null);
+          makeChoices(stageList[nextIdx], mode, false);
+        } else { finish(); }
       }, 500);
-    } else {
-      playSound(220, 'sawtooth', 0.5);
-      setIsCorrect(false);
-      setTimeout(() => setIsCorrect(null), 1000);
     }
-  };
+  }, [ansA, ansB]);
 
-  const renderQuestionText = () => {
-    const q = stageList[currentIndex];
-    if (mode === 'read') {
-      // 修正ポイント：【 】がある場合はそこだけをハイライト。ない場合は全てのq.kanjiをハイライト
-      let parts;
-      if (q.sentence.includes('【')) {
-        parts = q.sentence.split(/【|】/);
-        return (
-          <>
-            <div className="kanji-box">{q.kanji}</div>
-            <div className="sentence">
-               {parts.map((part, i) => 
-                 i % 2 === 1 ? <span key={i} className="highlight">{part}</span> : part
-               )}
-            </div>
-          </>
-        );
-      } else {
-        parts = q.sentence.split(new RegExp(`(${q.kanji})`, 'g'));
-        return (
-          <>
-            <div className="kanji-box">{q.kanji}</div>
-            <div className="sentence">
-               {parts.map((part, i) => 
-                 part === q.kanji ? <span key={i} className="highlight">{part}</span> : part
-               )}
-            </div>
-          </>
-        );
-      }
-    } else {
-      const hiddenSentence = q.sentence.replace(/【|】/g, '').replace(q.kanji, '⬜');
-      return (
-        <>
-          <div className="kanji-box">{q.yomi}</div>
-          <div className="sentence">{hiddenSentence}</div>
-        </>
-      );
-    }
+  const finish = () => {
+    if (mode === 'read') setClearedStagesRead(prev => Array.from(new Set([...prev, currentStage])));
+    else setClearedStagesWrite(prev => Array.from(new Set([...prev, currentStage])));
+    setView('stageClear'); setIsCorrect(null); setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   return (
@@ -245,38 +230,24 @@ function App() {
           <div className="header title-font">🎀 かんけん10きゅう 🎀</div>
           <p className="menu-sub">どっちを　れんしゅうする？</p>
           <div className="mode-grid">
-            <button className="btn-mode mode-read" onClick={() => selectMode('read')}>
-              <span className="mode-icon">📖</span>
-              <span className="mode-text">よみ (ひらがな)</span>
-            </button>
-            <button className="btn-mode mode-write" onClick={() => selectMode('write')}>
-              <span className="mode-icon">✏️</span>
-              <span className="mode-text">かき (かんじ)</span>
-            </button>
+            <button className="btn-mode mode-read" onClick={() => selectMode('read')}>📖 よみ</button>
+            <button className="btn-mode mode-write" onClick={() => selectMode('write')}>✏️ かき</button>
           </div>
         </div>
       )}
 
       {view === 'stageSelect' && (
         <div className="card menu-card popup">
-          <div className="header title-font">
-            {mode === 'read' ? '📖 よみの ステージ' : '✏️ かきの ステージ'}
-          </div>
+          <div className="header title-font">{mode === 'read' ? '📖 よみの ステージ' : '✏️ かきの ステージ'}</div>
           <div className="stage-grid">
-            {[...Array(8)].map((_, i) => {
-              const isCleared = mode === 'read' ? clearedStagesRead.includes(i) : clearedStagesWrite.includes(i);
-              return (
-                <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${isCleared ? 'cleared' : ''}`}>
-                  <span className="stage-num">ステージ {i + 1}</span>
-                  {isCleared ? <span className="stage-medal">💮クリア!</span> : <span className="stage-icon">💎</span>}
-                </button>
-              );
-            })}
-            {/* 【追加】スペシャルボタン */}
-            <button onClick={() => selectStage(8)} className={`btn-stage special ${mode === 'read' ? (clearedStagesRead.includes(8) ? 'cleared' : '') : (clearedStagesWrite.includes(8) ? 'cleared' : '')}`}>
-              <span className="stage-num">スペシャル</span>
-              <span className="stage-icon">🌈</span>
-              { (mode === 'read' ? clearedStagesRead.includes(8) : clearedStagesWrite.includes(8)) && <span className="stage-medal">💮クリア!</span> }
+            {[...Array(8)].map((_, i) => (
+              <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${(mode === 'read' ? clearedStagesRead : clearedStagesWrite).includes(i) ? 'cleared' : ''}`}>
+                <span className="stage-num">ステージ {i + 1}</span>
+                {(mode === 'read' ? clearedStagesRead : clearedStagesWrite).includes(i) ? '💮' : '💎'}
+              </button>
+            ))}
+            <button onClick={() => selectStage(8)} className={`btn-stage special ${(mode === 'read' ? clearedStagesRead : clearedStagesWrite).includes(8) ? 'cleared' : ''}`}>
+              <span className="stage-num">よみわけ</span>🌈
             </button>
           </div>
           <button onClick={() => setView('menu')} className="btn-back">もどる</button>
@@ -285,19 +256,34 @@ function App() {
 
       {view === 'quiz' && (
         <div className="card quiz-card popup">
-          <div className="header">✨ {currentStage === 8 ? 'スペシャル' : `ステージ ${currentStage + 1}`} ✨</div>
+          <div className="header">✨ {currentStage === 8 ? 'よみわけ 特訓' : `ステージ ${currentStage + 1}`} ✨</div>
           <div className="progress-bar">
             <div className="progress-gauge" style={{width: `${((currentIndex + 1) / stageList.length) * 100}%`}}></div>
-            <span className="progress-text">{currentIndex + 1} / {stageList.length} もんめ</span>
           </div>
           
-          {renderQuestionText()}
+          <div className="kanji-box-large">{stageList[currentIndex].kanji}</div>
 
-          <div className="choices">
-            {choices.map((c, i) => (
-              <button key={i} onClick={() => handleAnswer(c)} className={`btn-choice color-${i}`}>{c}</button>
-            ))}
-          </div>
+          {currentStage === 8 ? (
+            <div className="special-layout">
+              <div className={`q-row ${ansA ? 'done' : ''}`}>
+                <div className="sentence">{stageList[currentIndex].q1.s.split(/【|】/).map((p,i)=>i===1?<span className="target" key={i}>{p}</span>:p)}</div>
+                <div className="choices-mini">{choicesA.map((c,i)=><button key={i} onClick={()=>handleAnswer(c,'A')} className={`btn-choice-s ${ansA===c?'selected':''}`}>{c}</button>)}</div>
+              </div>
+              <div className="divider"></div>
+              <div className={`q-row ${ansB ? 'done' : ''}`}>
+                <div className="sentence">{stageList[currentIndex].q2.s.split(/【|】/).map((p,i)=>i===1?<span className="target" key={i}>{p}</span>:p)}</div>
+                <div className="choices-mini">{choicesB.map((c,i)=><button key={i} onClick={()=>handleAnswer(c,'B')} className={`btn-choice-s ${ansB===c?'selected':''}`}>{c}</button>)}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="normal-layout">
+              <div className="sentence">
+                {mode==='read' ? stageList[currentIndex].sentence.split(/（|）/).map((p,i)=>p===stageList[currentIndex].kanji?<span className="highlight" key={i}>{p}</span>:p) 
+                               : stageList[currentIndex].sentence.replace(stageList[currentIndex].kanji, '⬜')}
+              </div>
+              <div className="choices">{choicesA.map((c,i)=><button key={i} onClick={()=>handleAnswer(c,'A')} className={`btn-choice color-${i}`}>{c}</button>)}</div>
+            </div>
+          )}
           <button onClick={() => setView('stageSelect')} className="btn-back">やめる</button>
         </div>
       )}
@@ -305,103 +291,51 @@ function App() {
       {view === 'stageClear' && (
         <div className="card clear-card popup">
           {showConfetti && <div className="confetti">🎉🎊✨</div>}
-          <div className="finish-title title-font">🎉 クリア！ 🎉</div>
+          <div className="finish-title title-font">🎉 ぜんぶ せいかい！ 🎉</div>
           <div className="finish-icon bounce">🦄🍭💖</div>
-          <p className="finish-message">ぜんぶ　せいかい！<br/>すごい！　そのちょうし！</p>
-          <button onClick={() => setView('menu')} className="btn-restart">メニューへ　もどる</button>
+          <button onClick={() => setView('stageSelect')} className="btn-restart">つぎへ</button>
         </div>
       )}
 
-      {isCorrect === true && <div className="overlay ok popup">まる！🙆‍♀️💕</div>}
-      {isCorrect === false && <div className="overlay ng popup">ざんねん…💧</div>}
+      {isCorrect === true && <div className="overlay ok popup">🙆‍♀️💕</div>}
+      {isCorrect === false && <div className="overlay ng popup">💧</div>}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
-
-        .kanji-container {
-          background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8, #c2e9fb);
-          background-size: 400% 400%;
-          animation: gradientBG 20s ease infinite;
-          min-height: 100vh;
-          display: flex; align-items: center; justify-content: center;
-          padding: 20px; font-family: 'Kiwi Maru', sans-serif; overflow: hidden; position: relative;
-        }
-        .bg-elements { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .cloud, .star { position: absolute; font-size: 4rem; opacity: 0.6; animation: float 10s infinite linear; }
-        .c1 { top: 10%; left: 10%; animation-duration: 15s; } .c2 { top: 60%; right: 15%; animation-duration: 12s; animation-delay: -5s; font-size: 6rem; }
-        .s1 { top: 30%; right: 20%; animation-duration: 8s; font-size: 3rem; } .s2 { bottom: 20%; left: 25%; animation-duration: 10s; animation-delay: -2s; font-size: 2rem; }
-
-        .card {
-          background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
-          border-radius: 50px; padding: 30px; width: 100%; max-width: 500px;
-          box-shadow: 0 20px 40px rgba(255, 105, 180, 0.3), inset 0 0 20px rgba(255,255,255,0.5);
-          text-align: center; border: 4px solid transparent; position: relative; z-index: 1;
-        }
-        .menu-card { border-image: linear-gradient(to right, #ff9a9e, #fad0c4) 1; border-radius: 50px; }
-        .quiz-card { border-image: linear-gradient(to right, #a1c4fd, #c2e9fb) 1; }
-        .clear-card { border-image: linear-gradient(to right, #ffd700, #ffecb3) 1; }
-        .popup { animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .bounce { animation: bounce 2s infinite; }
-
-        .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; text-shadow: 3px 3px 0 #fff; }
-        .header { font-weight: bold; font-size: 1.5rem; margin-bottom: 20px; color: #ff69b4; }
-        .menu-sub { font-size: 1.2rem; color: #666; margin-bottom: 30px; font-weight: bold; }
-        
-        .mode-grid { display: grid; gap: 20px; }
-        .btn-mode {
-          padding: 25px; border-radius: 30px; border: none; color: white; cursor: pointer;
-          display: flex; align-items: center; justify-content: center; gap: 15px;
-          font-family: 'Mochiy+Pop+One', sans-serif; font-size: 1.4rem;
-          box-shadow: 0 8px 0 rgba(0,0,0,0.1), 0 15px 20px rgba(0,0,0,0.1);
-          transition: transform 0.1s;
-        }
-        .btn-mode:active { transform: translateY(6px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
-        .mode-read { background: linear-gradient(to right, #ff9a9e, #fad0c4); }
-        .mode-write { background: linear-gradient(to right, #a1c4fd, #c2e9fb); }
-        .mode-icon { font-size: 2rem; }
-
-        .stage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .btn-stage {
-          padding: 20px 10px; border: none; border-radius: 30px;
-          background: linear-gradient(to bottom, #fff, #f0f0f0);
-          color: #ff69b4; font-weight: bold; cursor: pointer;
-          box-shadow: 0 8px 0 #ffb6c1, 0 15px 20px rgba(255,105,180,0.2);
-          transition: all 0.1s; display: flex; flex-direction: column; align-items: center;
-        }
-        .btn-stage:active { transform: translateY(6px); box-shadow: 0 2px 0 #ffb6c1; }
-        .btn-stage.cleared {
-          background: linear-gradient(to bottom, #fff1b8, #ffe0b2);
-          color: #d48806; box-shadow: 0 8px 0 #ffd666, 0 15px 20px rgba(255, 215, 0, 0.2);
-        }
-        .btn-stage.special { border: 2px dashed #ff69b4; }
-        
-        .progress-bar { background: #ffe4e1; border-radius: 25px; height: 30px; position: relative; overflow: hidden; margin-bottom: 25px; }
-        .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 30px; font-size: 1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 2; }
-        .progress-gauge { height: 100%; background: linear-gradient(to right, #ff9a9e, #feada6); transition: width 0.3s ease; }
-        
-        .kanji-box { font-size: 6rem; font-weight: bold; border-radius: 30px; background: #fff; padding: 10px; color: #ff8c00; box-shadow: 0 10px 25px rgba(255, 165, 0, 0.3); margin-bottom: 20px; display: inline-block; min-width: 160px; }
-        .sentence { font-size: 1.6rem; color: #555; margin-bottom: 30px; font-weight: bold; }
-        .highlight { border-bottom: 3px solid #ff4757; color: #ff4757; }
-        
-        .choices { display: grid; gap: 18px; }
-        .btn-choice {
-          padding: 15px; font-size: 2rem; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.2); font-family: 'Mochiy+Pop+One', sans-serif; transition: all 0.1s;
-        }
-        .btn-choice:active { transform: translateY(6px); box-shadow: none; }
-        .color-0 { background: linear-gradient(to bottom, #ff9a9e, #fecfef); }
-        .color-1 { background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); }
-        .color-2 { background: linear-gradient(to bottom, #84fab0, #8fd3f4); }
-        
-        .btn-back { margin-top: 30px; background: rgba(255,255,255,0.5); border: none; color: #ff69b4; font-weight: bold; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
-        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 7rem; z-index: 100; pointer-events: none; text-shadow: 3px 3px 0 #fff; }
-        .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-        
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
-        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .kanji-container { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Kiwi Maru', sans-serif; position: relative; overflow: hidden; }
+        .bg-elements { position: absolute; width: 100%; height: 100%; pointer-events: none; }
+        .cloud { position: absolute; font-size: 5rem; opacity: 0.4; animation: float 15s infinite linear; }
+        .c1 { top: 10%; left: 5%; } .c2 { bottom: 10%; right: 5%; }
+        @keyframes float { 0% { transform: translateX(-20px); } 50% { transform: translateX(20px); } 100% { transform: translateX(-20px); } }
+        .card { background: rgba(255, 255, 255, 0.9); border-radius: 40px; padding: 25px; width: 95%; max-width: 450px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); text-align: center; position: relative; z-index: 10; border: 4px solid #fff; }
+        .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; }
+        .mode-grid { display: grid; gap: 15px; }
+        .btn-mode { padding: 20px; border-radius: 20px; border: none; background: #ff9a9e; color: #fff; font-size: 1.5rem; cursor: pointer; box-shadow: 0 5px 0 #ff7a8e; }
+        .mode-write { background: #a1c4fd; box-shadow: 0 5px 0 #81a4ed; }
+        .stage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .btn-stage { padding: 15px 5px; border-radius: 15px; border: 2px solid #ffb6c1; background: #fff; cursor: pointer; font-size: 0.9rem; }
+        .btn-stage.cleared { background: #fff1b8; }
+        .btn-stage.special { border: 2px dashed #ff69b4; grid-column: span 3; font-size: 1.2rem; }
+        .kanji-box-large { font-size: 5rem; color: #ff8c00; background: #fff; border-radius: 20px; display: inline-block; padding: 0 20px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .progress-bar { background: #eee; height: 10px; border-radius: 5px; margin-bottom: 15px; overflow: hidden; }
+        .progress-gauge { background: #84fab0; height: 100%; transition: width 0.3s; }
+        .special-layout { text-align: left; background: #fff9fa; padding: 15px; border-radius: 20px; border: 2px solid #ffe4e1; }
+        .q-row { transition: opacity 0.3s; }
+        .q-row.done { opacity: 0.6; pointer-events: none; }
+        .divider { height: 2px; background: #ffe4e1; margin: 15px 0; }
+        .sentence { font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; }
+        .target { color: #ff4757; text-decoration: underline; font-size: 1.4rem; padding: 0 3px; }
+        .choices-mini { display: flex; gap: 8px; justify-content: center; }
+        .btn-choice-s { padding: 10px 15px; border-radius: 12px; border: 2px solid #a1c4fd; background: #fff; cursor: pointer; font-family: 'Mochiy+Pop+One', sans-serif; font-size: 1.1rem; }
+        .btn-choice-s.selected { background: #a1c4fd; color: #fff; }
+        .btn-choice { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 30px; border: none; color: #fff; font-size: 1.5rem; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.1); }
+        .color-0 { background: #ff9a9e; } .color-1 { background: #a1c4fd; } .color-2 { background: #84fab0; }
+        .highlight { color: #ff4757; border-bottom: 3px solid; }
+        .btn-back { margin-top: 15px; background: none; border: none; color: #aaa; text-decoration: underline; cursor: pointer; }
+        .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 8rem; z-index: 100; pointer-events: none; }
+        .popup { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       `}</style>
     </div>
   );
