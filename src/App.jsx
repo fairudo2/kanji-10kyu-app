@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級全80文字データ
+// 通常の80文字データ
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "一（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　二（　）こ　ある。" },
@@ -33,7 +33,7 @@ const kanjiList = [
   { kanji: "田", yomi: "た", sentence: "田（　）んぼに　いく。" },
   { kanji: "石", yomi: "いし", sentence: "石（　）を　ひろう。" },
   { kanji: "花", yomi: "はな", sentence: "きれいな　花（　）が　さく。" },
-  { kanji: "草", yomi: "くさ", sentence: "草（　）を　むしる。" },
+  { kanji: "草", yomi: "くさ", sentence: "草（　）を　むむる。" },
   { kanji: "林", yomi: "はやし", sentence: "林（　）の中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "森（　）に　いく。" },
   { kanji: "竹", yomi: "たけ", sentence: "竹（　）やぶが　ある。" },
@@ -84,6 +84,19 @@ const kanjiList = [
   { kanji: "雨", yomi: "あめ", sentence: "雨（　）が　ふってきた。" }
 ];
 
+// 【追加】同一漢字の読み分け（スペシャルステージ用データ）
+// ターゲットにしたい漢字を 【 】 で囲む
+const specialReadingList = [
+  { kanji: "日", yomi: "にち", sentence: "【日】よう日は、いい　お日さま。" },
+  { kanji: "日", yomi: "び", sentence: "日よう【日】は、いい　お日さま。" },
+  { kanji: "一", yomi: "いち", sentence: "【一】年生の、りんごは　一つ。" },
+  { kanji: "一", yomi: "ひと", sentence: "一年生の、りんごは　【一】つ。" },
+  { kanji: "十", yomi: "じゅう", sentence: "【十】円を　もって、十日へ。" },
+  { kanji: "十", yomi: "とお", sentence: "十円を　もって、【十】日へ。" },
+  { kanji: "二", yomi: "に", sentence: "【二】年生は、みかんを　二つ。" },
+  { kanji: "二", yomi: "ふた", sentence: "二年生は、みかんを　【二】つ。" }
+];
+
 function App() {
   const [view, setView] = useState('menu'); 
   const [mode, setMode] = useState('read'); 
@@ -115,8 +128,14 @@ function App() {
   };
 
   const selectStage = (stageIdx) => {
-    const startIdx = stageIdx * 10;
-    const list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
+    let list;
+    if (stageIdx === 8) {
+      // スペシャルステージ
+      list = [...specialReadingList].sort(() => Math.random() - 0.5);
+    } else {
+      const startIdx = stageIdx * 10;
+      list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
+    }
     setStageList(list);
     setCurrentStage(stageIdx);
     setCurrentIndex(0);
@@ -126,7 +145,7 @@ function App() {
 
   const makeChoices = (question, currentMode) => {
     if (!question) return;
-    const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
+    const allYomis = Array.from(new Set([...kanjiList.map(k => k.yomi), ...specialReadingList.map(k => k.yomi)]));
     const allKanjis = kanjiList.map(k => k.kanji);
     
     let correct, distractors;
@@ -150,7 +169,7 @@ function App() {
       setIsCorrect(true);
       setTimeout(() => {
         const nextIdx = currentIndex + 1;
-        if (nextIdx < 10) {
+        if (nextIdx < stageList.length) {
           setCurrentIndex(nextIdx);
           makeChoices(stageList[nextIdx], mode);
           setIsCorrect(null);
@@ -176,20 +195,35 @@ function App() {
   const renderQuestionText = () => {
     const q = stageList[currentIndex];
     if (mode === 'read') {
-      // 修正ポイント：漢字の部分だけを正確に抜き出して、そこだけに赤線を引くように修正
-      const parts = q.sentence.split(new RegExp(`(${q.kanji})`, 'g'));
-      return (
-        <>
-          <div className="kanji-box">{q.kanji}</div>
-          <div className="sentence">
-             {parts.map((part, i) => 
-               part === q.kanji ? <span key={i} className="highlight">{part}</span> : part
-             )}
-          </div>
-        </>
-      );
+      // 修正ポイント：【 】がある場合はそこだけをハイライト。ない場合は全てのq.kanjiをハイライト
+      let parts;
+      if (q.sentence.includes('【')) {
+        parts = q.sentence.split(/【|】/);
+        return (
+          <>
+            <div className="kanji-box">{q.kanji}</div>
+            <div className="sentence">
+               {parts.map((part, i) => 
+                 i % 2 === 1 ? <span key={i} className="highlight">{part}</span> : part
+               )}
+            </div>
+          </>
+        );
+      } else {
+        parts = q.sentence.split(new RegExp(`(${q.kanji})`, 'g'));
+        return (
+          <>
+            <div className="kanji-box">{q.kanji}</div>
+            <div className="sentence">
+               {parts.map((part, i) => 
+                 part === q.kanji ? <span key={i} className="highlight">{part}</span> : part
+               )}
+            </div>
+          </>
+        );
+      }
     } else {
-      const hiddenSentence = q.sentence.replace(q.kanji, '⬜');
+      const hiddenSentence = q.sentence.replace(/【|】/g, '').replace(q.kanji, '⬜');
       return (
         <>
           <div className="kanji-box">{q.yomi}</div>
@@ -238,6 +272,12 @@ function App() {
                 </button>
               );
             })}
+            {/* 【追加】スペシャルボタン */}
+            <button onClick={() => selectStage(8)} className={`btn-stage special ${mode === 'read' ? (clearedStagesRead.includes(8) ? 'cleared' : '') : (clearedStagesWrite.includes(8) ? 'cleared' : '')}`}>
+              <span className="stage-num">スペシャル</span>
+              <span className="stage-icon">🌈</span>
+              { (mode === 'read' ? clearedStagesRead.includes(8) : clearedStagesWrite.includes(8)) && <span className="stage-medal">💮クリア!</span> }
+            </button>
           </div>
           <button onClick={() => setView('menu')} className="btn-back">もどる</button>
         </div>
@@ -245,10 +285,10 @@ function App() {
 
       {view === 'quiz' && (
         <div className="card quiz-card popup">
-          <div className="header">✨ ステージ {currentStage + 1} ✨</div>
+          <div className="header">✨ {currentStage === 8 ? 'スペシャル' : `ステージ ${currentStage + 1}`} ✨</div>
           <div className="progress-bar">
-            <div className="progress-gauge" style={{width: `${((currentIndex + 1) / 10) * 100}%`}}></div>
-            <span className="progress-text">{currentIndex + 1} / 10 もんめ</span>
+            <div className="progress-gauge" style={{width: `${((currentIndex + 1) / stageList.length) * 100}%`}}></div>
+            <span className="progress-text">{currentIndex + 1} / {stageList.length} もんめ</span>
           </div>
           
           {renderQuestionText()}
@@ -265,10 +305,10 @@ function App() {
       {view === 'stageClear' && (
         <div className="card clear-card popup">
           {showConfetti && <div className="confetti">🎉🎊✨</div>}
-          <div className="finish-title title-font">🎉 ステージ {currentStage + 1} クリア！ 🎉</div>
+          <div className="finish-title title-font">🎉 クリア！ 🎉</div>
           <div className="finish-icon bounce">🦄🍭💖</div>
-          <p className="finish-message">10もん　ぜんぶ　せいかい！<br/>すごい！　そのちょうし！</p>
-          <button onClick={() => setView('stageSelect')} className="btn-restart">つぎの ステージへ</button>
+          <p className="finish-message">ぜんぶ　せいかい！<br/>すごい！　そのちょうし！</p>
+          <button onClick={() => setView('menu')} className="btn-restart">メニューへ　もどる</button>
         </div>
       )}
 
@@ -334,6 +374,7 @@ function App() {
           background: linear-gradient(to bottom, #fff1b8, #ffe0b2);
           color: #d48806; box-shadow: 0 8px 0 #ffd666, 0 15px 20px rgba(255, 215, 0, 0.2);
         }
+        .btn-stage.special { border: 2px dashed #ff69b4; }
         
         .progress-bar { background: #ffe4e1; border-radius: 25px; height: 30px; position: relative; overflow: hidden; margin-bottom: 25px; }
         .progress-text { position: absolute; width: 100%; top: 0; left: 0; line-height: 30px; font-size: 1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 2; }
