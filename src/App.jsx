@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級 全80文字 データ完全修正版
-// 答えのネタバレを削除し、1年生向けの短い文章にしました。
+// 漢検10級 全80文字 データ（変更なし）
 const kanjiList = [
   // --- ステージ1 (1-10) 数字 ---
   { kanji: "一", yomi: "いち", sentence: "【一】ねんせいに　なる。", isMulti: true, q2: { s: "りんごが　【一】つ。", a: "ひと" } },
@@ -25,7 +24,7 @@ const kanjiList = [
   { kanji: "中", yomi: "なか", sentence: "はこの　【中】を　見る。", isMulti: true, q2: { s: "せ【中】を　あらう。", a: "なか" } },
   { kanji: "大", yomi: "おお", sentence: "【大】きい　ケーキ。", isMulti: true, q2: { s: "【大】がくせいの　お姉さん。", a: "だい" } },
   { kanji: "小", yomi: "ちい", sentence: "【小】さい　あり。", isMulti: true, q2: { s: "【小】がっこうに　いく。", a: "しょう" } },
-  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】一日は　お正月。", a: "がつ" } },
+  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】（いちがつ）。", a: "がつ" } },
 
   // --- ステージ3 (21-30) 曜日・自然 ---
   { kanji: "日", yomi: "ひ", sentence: "お【日】さまが　出ている。", isMulti: true, q2: { s: "あしたは　【日】ようび。", a: "にち" } },
@@ -111,7 +110,13 @@ function App() {
   const [ansA, setAnsA] = useState(null);
   const [ansB, setAnsB] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
-  const [clearedStages, setClearedStages] = useState({ read: [], write: [] });
+  
+  // タイムアタック＆記録用
+  const [startTime, setStartTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [finalTime, setFinalTime] = useState(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
+  const [records, setRecords] = useState({ read: Array(8).fill(null), write: Array(8).fill(null) });
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const playSound = (freq, type, duration) => {
@@ -125,6 +130,23 @@ function App() {
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   };
 
+  // 記録のロード
+  useEffect(() => {
+    const saved = localStorage.getItem('kanken10_records');
+    if (saved) setRecords(JSON.parse(saved));
+  }, []);
+
+  // タイマー
+  useEffect(() => {
+    let timer;
+    if (view === 'quiz' && startTime > 0) {
+      timer = setInterval(() => {
+        setCurrentTime(((Date.now() - startTime) / 1000).toFixed(1));
+      }, 100);
+    }
+    return () => clearInterval(timer);
+  }, [view, startTime]);
+
   const selectStage = (idx) => {
     const startIdx = idx * 10;
     const safeList = kanjiList.slice(startIdx, startIdx + 10);
@@ -136,6 +158,8 @@ function App() {
     setCurrentIndex(0);
     setAnsA(null); setAnsB(null);
     setView('quiz');
+    setStartTime(Date.now()); // スタート時間記録
+    setCurrentTime(0);
     makeChoices(list[0]);
   };
 
@@ -185,10 +209,31 @@ function App() {
         setCurrentIndex(currentIndex + 1); setAnsA(null); setAnsB(null); setIsCorrect(null);
         makeChoices(stageList[currentIndex + 1]);
       } else {
-        setClearedStages(prev => ({...prev, [mode]: [...new Set([...prev[mode], currentStage])]}));
-        setView('stageClear'); setIsCorrect(null);
+        finishStage();
       }
     }, 1000);
+  };
+
+  const finishStage = () => {
+    const time = ((Date.now() - startTime) / 1000).toFixed(1);
+    setFinalTime(time);
+    
+    const currentBest = records[mode][currentStage];
+    let newRec = false;
+    
+    if (currentBest === null || parseFloat(time) < parseFloat(currentBest)) {
+      newRec = true;
+      const newRecords = { ...records };
+      newRecords[mode][currentStage] = time;
+      setRecords(newRecords);
+      localStorage.setItem('kanken10_records', JSON.stringify(newRecords));
+    }
+    
+    setIsNewRecord(newRec);
+    setView('stageClear');
+    setIsCorrect(null);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   return (
@@ -208,8 +253,9 @@ function App() {
           <div className="header title-font">{mode === 'read' ? '📖 よみの ステージ' : '✏️ かきの ステージ'}</div>
           <div className="stage-grid">
             {[...Array(8)].map((_, i) => (
-              <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${clearedStages[mode].includes(i) ? 'cleared' : ''}`}>
-                ステージ {i + 1} {clearedStages[mode].includes(i) ? '💮' : '💎'}
+              <button key={i} onClick={() => selectStage(i)} className={`btn-stage ${records[mode][i] ? 'cleared' : ''}`}>
+                <span className="stage-label">ステージ {i + 1}</span>
+                {records[mode][i] ? <span className="best-time">👑 {records[mode][i]}びょう</span> : <span className="no-record">💎</span>}
               </button>
             ))}
           </div>
@@ -219,7 +265,11 @@ function App() {
 
       {view === 'quiz' && (
         <div className="card quiz-popup">
-          <div className="header-s">ステージ {currentStage + 1} - {currentIndex + 1}/10</div>
+          <div className="quiz-header">
+            <div className="stage-info">ステージ {currentStage + 1} - {currentIndex + 1}/10</div>
+            <div className="timer-badge">⏱️ {currentTime}</div>
+          </div>
+          
           <div className="kanji-display">{stageList[currentIndex].kanji}</div>
           
           <div className="question-area">
@@ -260,9 +310,14 @@ function App() {
 
       {view === 'stageClear' && (
         <div className="card clear-popup">
-          <div className="title-font big">💖 ぜんぶ せいかい 💖</div>
-          <div className="bunny-character bounce">🐰👑✨</div>
-          <p className="msg">すごい！ ステージ{currentStage+1} クリア！</p>
+          <div className="title-font big">{isNewRecord ? "🎉 しんきろく！ 🎉" : "💖 クリア！ 💖"}</div>
+          <div className="bunny-character bounce">{isNewRecord ? "🐰🏆✨" : "🐰🍭✨"}</div>
+          
+          <div className="result-time">
+            <div className="time-label">タイム</div>
+            <div className="time-value">{finalTime} <span className="unit">びょう</span></div>
+          </div>
+
           <button onClick={() => setView('stageSelect')} className="btn-next">つぎの ステージへ</button>
         </div>
       )}
@@ -277,6 +332,11 @@ function App() {
         .yumekawa-app { background: linear-gradient(135deg, #ffdde1, #ee9ca7, #a7bfe8); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Kiwi Maru', sans-serif; overflow: hidden; }
         .card { background: rgba(255, 255, 255, 0.9); border-radius: 40px; padding: 20px; width: 95%; max-width: 480px; box-shadow: 0 15px 30px rgba(255, 105, 180, 0.2); text-align: center; border: 4px solid #fff; position: relative; }
         .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; text-shadow: 2px 2px #fff; }
+        
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
+        .stage-info { font-weight: bold; color: #ff9a9e; }
+        .timer-badge { background: #fff; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #ff4757; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-family: 'Mochiy+Pop+One', sans-serif; }
+
         .glow-marker { background: linear-gradient(transparent 50%, rgba(255, 105, 180, 0.4) 50%); padding: 0 3px; font-weight: bold; color: #ff4757; font-size: 1.4rem; }
         .kanji-display { font-size: 4rem; color: #ff8c00; background: #fff; border-radius: 20px; display: inline-block; padding: 0 25px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .question-area { background: #fff9fa; padding: 15px; border-radius: 25px; border: 2px solid #ffe4e1; text-align: left; }
@@ -289,11 +349,22 @@ function App() {
         .choice-s.selected { background: #ff9a9e; color: #fff; }
         .choice-l { flex: 1; padding: 15px; border-radius: 30px; border: none; color: #fff; font-size: 1.5rem; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.1); }
         .color-0 { background: #ff9a9e; } .color-1 { background: #a1c4fd; } .color-2 { background: #84fab0; }
+        
         .btn-mode { width: 100%; padding: 20px; margin-bottom: 15px; border-radius: 30px; border: none; color: #fff; font-size: 1.4rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.1); }
         .pink { background: #ff9a9e; } .blue { background: #a1c4fd; }
+        
         .stage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
-        .btn-stage { padding: 15px; border-radius: 20px; border: 2px solid #ffb6c1; background: #fff; cursor: pointer; color: #ff69b4; font-weight: bold; }
-        .btn-stage.cleared { background: #fff1b8; color: #d48806; border-color: #ffd666; }
+        .btn-stage { padding: 10px; border-radius: 20px; border: 2px solid #ffb6c1; background: #fff; cursor: pointer; color: #ff69b4; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; }
+        .btn-stage.cleared { background: #fff1b8; border-color: #ffd666; color: #d48806; }
+        .stage-label { font-size: 1rem; margin-bottom: 5px; }
+        .best-time { font-size: 1.2rem; font-family: 'Mochiy+Pop+One', sans-serif; color: #ff4757; }
+        .no-record { font-size: 1.5rem; }
+
+        .result-time { margin: 20px 0; }
+        .time-label { font-size: 1.2rem; color: #888; font-weight: bold; margin-bottom: 5px; }
+        .time-value { font-size: 3.5rem; font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; line-height: 1; }
+        .unit { font-size: 1.2rem; }
+
         .character-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; pointer-events: none; animation: popUp 0.4s ease-out; }
         .character-overlay .bunny { font-size: 8rem; filter: drop-shadow(0 0 10px #fff); } .character-overlay .cat { font-size: 8rem; }
         .character-overlay .txt { font-size: 2rem; font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; background: rgba(255,255,255,0.95); padding: 10px 30px; border-radius: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-top: 10px; }
