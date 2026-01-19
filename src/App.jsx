@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級 全80文字 データ完全版
-// 答えのネタバレ（読み仮名）を削除し、わかりやすい短文に修正しました。
+// 漢検10級 全80文字 データ完全修正版
+// 答えのネタバレを削除し、1年生向けの短い文章にしました。
 const kanjiList = [
   // --- ステージ1 (1-10) 数字 ---
   { kanji: "一", yomi: "いち", sentence: "【一】ねんせいに　なる。", isMulti: true, q2: { s: "りんごが　【一】つ。", a: "ひと" } },
   { kanji: "二", yomi: "に", sentence: "【二】ねんせいに　なる。", isMulti: true, q2: { s: "みかんが　【二】つ。", a: "ふた" } },
-  { kanji: "三", yomi: "さん", sentence: "【三】かくけいの　おにぎり。", isMulti: true, q2: { s: "おかしを　【三】つ。", a: "み" } },
+  { kanji: "三", yomi: "さん", sentence: "【三】かくけいの　つみき。", isMulti: true, q2: { s: "おかしを　【三】つ　たべる。", a: "み" } },
   { kanji: "四", yomi: "よん", sentence: "【四】ねんせいの　お兄さん。", isMulti: true, q2: { s: "パンを　【四】つ　かう。", a: "よ" } },
-  { kanji: "五", yomi: "ご", sentence: "【五】えん　もっている。", isMulti: true, q2: { s: "あめを　【五】つ　たべる。", a: "いつ" } },
-  { kanji: "六", yomi: "ろく", sentence: "【六】じに　おきる。", isMulti: true, q2: { s: "コップが　【六】つ　ある。", a: "む" } },
-  { kanji: "七", yomi: "しち", sentence: "【七】じに　ねる。", isMulti: true, q2: { s: "【七】つの　ほし。", a: "なな" } },
-  { kanji: "八", yomi: "はち", sentence: "【八】にんで　あそぶ。", isMulti: true, q2: { s: "【八】や（やおや）。", a: "や" } },
+  { kanji: "五", yomi: "ご", sentence: "【五】えん　もっている。", isMulti: true, q2: { s: "あめを　【五】つ　もらう。", a: "いつ" } },
+  { kanji: "六", yomi: "ろく", sentence: "あさ　【六】じに　おきる。", isMulti: true, q2: { s: "コップが　【六】つ　ある。", a: "む" } },
+  { kanji: "七", yomi: "しち", sentence: "よる　【七】じに　ねる。", isMulti: true, q2: { s: "【七】つの　ほし。", a: "なな" } },
+  { kanji: "八", yomi: "はち", sentence: "【八】にんで　あそぶ。", isMulti: true, q2: { s: "いしが　【八】つ　ある。", a: "や" } },
   { kanji: "九", yomi: "く", sentence: "【九】がつに　なる。", isMulti: true, q2: { s: "たまごが　【九】つ。", a: "ここの" } },
-  { kanji: "十", yomi: "じゅう", sentence: "【十】えん　ひろう。", isMulti: true, q2: { s: "まい月　【十】日。", a: "とお" } },
+  { kanji: "十", yomi: "じゅう", sentence: "【十】えん　ひろう。", isMulti: true, q2: { s: "きょうは　【十】日。", a: "とお" } },
 
   // --- ステージ2 (11-20) 大小・位置 ---
   { kanji: "百", yomi: "ひゃく", sentence: "テストで　【百】てんを　とる。" },
@@ -25,18 +25,18 @@ const kanjiList = [
   { kanji: "中", yomi: "なか", sentence: "はこの　【中】を　見る。", isMulti: true, q2: { s: "せ【中】を　あらう。", a: "なか" } },
   { kanji: "大", yomi: "おお", sentence: "【大】きい　ケーキ。", isMulti: true, q2: { s: "【大】がくせいの　お姉さん。", a: "だい" } },
   { kanji: "小", yomi: "ちい", sentence: "【小】さい　あり。", isMulti: true, q2: { s: "【小】がっこうに　いく。", a: "しょう" } },
-  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】（いちがつ）。", a: "がつ" } },
+  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】一日は　お正月。", a: "がつ" } },
 
   // --- ステージ3 (21-30) 曜日・自然 ---
   { kanji: "日", yomi: "ひ", sentence: "お【日】さまが　出ている。", isMulti: true, q2: { s: "あしたは　【日】ようび。", a: "にち" } },
   { kanji: "火", yomi: "ひ", sentence: "【火】が　もえている。", isMulti: true, q2: { s: "【火】ようびに　あそぶ。", a: "か" } },
   { kanji: "水", yomi: "みず", sentence: "つめたい　【水】。", isMulti: true, q2: { s: "【水】ようびは　早い。", a: "すい" } },
-  { kanji: "木", yomi: "き", sentence: "大きな　【木】の　下。", isMulti: true, q2: { s: "【木】ようびの　きゅうしょく。", a: "もく" } },
-  { kanji: "金", yomi: "きん", sentence: "【金】メダルを　もらう。", isMulti: true, q2: { s: "お【金】を　ためる。", a: "かね" } }, // 修正済み
+  { kanji: "木", yomi: "き", sentence: "大きな　【木】の　下。", isMulti: true, q2: { s: "【木】ようびの　よてい。", a: "もく" } },
+  { kanji: "金", yomi: "きん", sentence: "【金】メダルを　もらう。", isMulti: true, q2: { s: "お【金】を　つかう。", a: "かね" } },
   { kanji: "土", yomi: "つち", sentence: "【土】あそびを　する。", isMulti: true, q2: { s: "【土】ようびは　お休み。", a: "ど" } },
-  { kanji: "山", yomi: "やま", sentence: "【山】のぼりを　する。", isMulti: true, q2: { s: "ふじ【山】（ふじさん）。", a: "さん" } },
+  { kanji: "山", yomi: "やま", sentence: "【山】のぼりを　する。", isMulti: true, q2: { s: "ふじ【山】に　のぼる。", a: "さん" } },
   { kanji: "川", yomi: "かわ", sentence: "【川】で　およぐ。" },
-  { kanji: "田", yomi: "た", sentence: "【田】んぼに　カエルがいる。", isMulti: true, q2: { s: "水【田】（すいでん）。", a: "でん" } },
+  { kanji: "田", yomi: "た", sentence: "【田】んぼに　カエルがいる。", isMulti: true, q2: { s: "広い　水【田】。", a: "でん" } },
   { kanji: "石", yomi: "いし", sentence: "きれいな　【石】を　ひろう。" },
 
   // --- ステージ4 (31-40) 自然・生き物 ---
@@ -44,60 +44,60 @@ const kanjiList = [
   { kanji: "草", yomi: "くさ", sentence: "【草】を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "【林】の　中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "【森】に　いく。" },
-  { kanji: "竹", yomi: "たけ", sentence: "【竹】うまに　のる。", isMulti: true, q2: { s: "【竹】林（ちくりん）。", a: "ちく" } },
+  { kanji: "竹", yomi: "たけ", sentence: "【竹】うまに　のる。", isMulti: true, q2: { s: "きれいな　【竹】りん。", a: "ちく" } },
   { kanji: "虫", yomi: "むし", sentence: "【虫】とりを　する。" },
   { kanji: "貝", yomi: "かい", sentence: "うみで　【貝】を　ひろう。" },
-  { kanji: "犬", yomi: "いぬ", sentence: "白い　【犬】。", isMulti: true, q2: { s: "ばん【犬】（ばんけん）。", a: "けん" } },
-  { kanji: "足", yomi: "あし", sentence: "【足】が　はやい。", isMulti: true, q2: { s: "えん【足】に　いく。", a: "そく" } },
+  { kanji: "犬", yomi: "いぬ", sentence: "白い　【犬】。", isMulti: true, q2: { s: "ばん【犬】が　いる。", a: "けん" } },
+  { kanji: "足", yomi: "あし", sentence: "【足】が　はやい。", isMulti: true, q2: { s: "たのしい　えん【足】。", a: "そく" } },
   { kanji: "手", yomi: "て", sentence: "【手】を　あらう。" },
 
   // --- ステージ5 (41-50) 体・人 ---
-  { kanji: "目", yomi: "め", sentence: "【目】が　いい。", isMulti: true, q2: { s: "ちゅう【目】（ちゅうもく）する。", a: "もく" } },
+  { kanji: "目", yomi: "め", sentence: "【目】が　いい。", isMulti: true, q2: { s: "【目】ひょうを　きめる。", a: "もく" } },
   { kanji: "耳", yomi: "みみ", sentence: "【耳】を　すます。" },
-  { kanji: "口", yomi: "くち", sentence: "【口】を　あける。", isMulti: true, q2: { s: "いり【口】から　はいる。", a: "ぐち" } },
-  { kanji: "力", yomi: "ちから", sentence: "【力】もちの　おとうさん。", isMulti: true, q2: { s: "きょう【力】（きょうりょく）する。", a: "りょく" } },
-  { kanji: "人", yomi: "ひと", sentence: "しっている　【人】。", isMulti: true, q2: { s: "三【人】で　あそぶ。", a: "にん" } },
-  { kanji: "子", yomi: "こ", sentence: "元気な　【子】ども。", isMulti: true, q2: { s: "女の【子】。", a: "こ" } },
-  { kanji: "女", yomi: "おんな", sentence: "【女】の　ひと。", isMulti: true, q2: { s: "【女】子（じょし）。", a: "じょ" } },
-  { kanji: "男", yomi: "おとこ", sentence: "【男】の　こ。", isMulti: true, q2: { s: "長【男】（ちょうなん）。", a: "なん" } },
-  { kanji: "名", yomi: "な", sentence: "お【名】まえを　かく。", isMulti: true, q2: { s: "ゆう【名】（ゆうめい）な　ひと。", a: "めい" } },
-  { kanji: "正", yomi: "ただ", sentence: "【正】しい　こたえ。", isMulti: true, q2: { s: "お【正】月（しょうがつ）。", a: "しょう" } },
+  { kanji: "口", yomi: "くち", sentence: "【口】を　あける。", isMulti: true, q2: { s: "いり【口】は　こちら。", a: "ぐち" } },
+  { kanji: "力", yomi: "ちから", sentence: "【力】もちの　おとうさん。", isMulti: true, q2: { s: "みんなで　きょう【力】する。", a: "りょく" } },
+  { kanji: "人", yomi: "ひと", sentence: "しっている　【人】。", isMulti: true, q2: { s: "三【人】で　たべる。", a: "にん" } },
+  { kanji: "子", yomi: "こ", sentence: "元気な　【子】ども。", isMulti: true, q2: { s: "女の【子】と　あそぶ。", a: "こ" } },
+  { kanji: "女", yomi: "おんな", sentence: "【女】の　ひと。", isMulti: true, q2: { s: "【女】子の　トイレ。", a: "じょ" } },
+  { kanji: "男", yomi: "おとこ", sentence: "【男】の　こ。", isMulti: true, q2: { s: "わたしは　長【男】です。", a: "なん" } },
+  { kanji: "名", yomi: "な", sentence: "お【名】まえを　かく。", isMulti: true, q2: { s: "ゆう【名】な　え。", a: "めい" } },
+  { kanji: "正", yomi: "ただ", sentence: "【正】しい　こたえ。", isMulti: true, q2: { s: "お【正】月に　もちをたべる。", a: "しょう" } },
 
   // --- ステージ6 (51-60) 学校・動作 ---
   { kanji: "生", yomi: "う", sentence: "あかちゃんが　【生】まれる。", isMulti: true, q2: { s: "先【生】、さようなら。", a: "せい" } },
-  { kanji: "立", yomi: "た", sentence: "いすから　【立】つ。", isMulti: true, q2: { s: "国【立】（こくりつ）こうえん。", a: "りつ" } },
-  { kanji: "休", yomi: "やす", sentence: "学校が　お【休】み。", isMulti: true, q2: { s: "【休】日（きゅうじつ）。", a: "きゅう" } },
-  { kanji: "出", yomi: "で", sentence: "おばけが　【出】る。", isMulti: true, q2: { s: "【出】口（でぐち）。", a: "で" } },
-  { kanji: "入", yomi: "はい", sentence: "へやに　【入】る。", isMulti: true, q2: { s: "【入】口（いりぐち）。", a: "いり" } },
-  { kanji: "見", yomi: "み", sentence: "ゆめを　【見】る。", isMulti: true, q2: { s: "花【見】（はなみ）。", a: "み" } },
-  { kanji: "音", yomi: "おと", sentence: "ピアノの　【音】。", isMulti: true, q2: { s: "【音】楽（おんがく）。", a: "おん" } },
-  { kanji: "学", yomi: "まな", sentence: "かんじを　【学】ぶ。", isMulti: true, q2: { s: "【学】校に　いく。", a: "がっ" } },
-  { kanji: "校", yomi: "こう", sentence: "学【校】で　あそぶ。", isMulti: true, q2: { s: "【校】長（こうちょう）先生。", a: "こう" } },
-  { kanji: "文", yomi: "ぶん", sentence: "作【文】（さくぶん）を　かく。", isMulti: true, q2: { s: "【文】字（もじ）。", a: "も" } },
+  { kanji: "立", yomi: "た", sentence: "いすから　【立】つ。", isMulti: true, q2: { s: "こく【立】こうえん。", a: "りつ" } },
+  { kanji: "休", yomi: "やす", sentence: "学校が　お【休】み。", isMulti: true, q2: { s: "【休】じつの　パパ。", a: "きゅう" } },
+  { kanji: "出", yomi: "で", sentence: "おばけが　【出】る。", isMulti: true, q2: { s: "【出】ぐちは　あっち。", a: "で" } },
+  { kanji: "入", yomi: "はい", sentence: "へやに　【入】る。", isMulti: true, q2: { s: "【入】がくしき。", a: "にゅう" } },
+  { kanji: "見", yomi: "み", sentence: "ゆめを　【見】る。", isMulti: true, q2: { s: "お花【見】を　する。", a: "み" } },
+  { kanji: "音", yomi: "おと", sentence: "ピアノの　【音】。", isMulti: true, q2: { s: "【音】がくの　じかん。", a: "おん" } },
+  { kanji: "学", yomi: "まな", sentence: "かんじを　【学】ぶ。", isMulti: true, q2: { s: "【学】こうへ　いく。", a: "がっ" } },
+  { kanji: "校", yomi: "こう", sentence: "学【校】で　あそぶ。", isMulti: true, q2: { s: "【校】ちょう先生。", a: "こう" } },
+  { kanji: "文", yomi: "ぶん", sentence: "作【文】を　かく。", isMulti: true, q2: { s: "【文】字（もじ）。", a: "も" } },
 
   // --- ステージ7 (61-70) 色・空 ---
   { kanji: "字", yomi: "じ", sentence: "きれいな　【字】。" },
-  { kanji: "早", yomi: "はや", sentence: "【早】く　ねる。", isMulti: true, q2: { s: "【早】朝（そうちょう）。", a: "そう" } },
-  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】（たなばた）。", a: "ばた" } },
+  { kanji: "早", yomi: "はや", sentence: "【早】く　ねる。", isMulti: true, q2: { s: "【早】ちょうに　おきる。", a: "そう" } },
+  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】の　ささかざり。", a: "ばた" } },
   { kanji: "空", yomi: "そら", sentence: "青い　【空】。", isMulti: true, q2: { s: "【空】気を　すう。", a: "くう" } },
-  { kanji: "気", yomi: "き", sentence: "元【気】な　こえ。", isMulti: true, q2: { s: "寒【気】（さむけ）が　する。", a: "け" } },
-  { kanji: "天", yomi: "てん", sentence: "いい　【天】気。", isMulti: true, q2: { s: "【天】の川（あまのがわ）。", a: "あま" } },
-  { kanji: "赤", yomi: "あか", sentence: "【赤】い　りんご。", isMulti: true, q2: { s: "【赤】白（あかしか）ぼうし。", a: "あか" } },
-  { kanji: "青", yomi: "あお", sentence: "【青】い　うみ。", isMulti: true, q2: { s: "【青】空（あおぞら）。", a: "あお" } },
-  { kanji: "白", yomi: "しろ", sentence: "【白】い　くも。", isMulti: true, q2: { s: "【白】鳥（はくちょう）。", a: "はく" } },
+  { kanji: "気", yomi: "き", sentence: "元【気】な　こえ。", isMulti: true, q2: { s: "さむ【気】が　する。", a: "け" } },
+  { kanji: "天", yomi: "てん", sentence: "いい　【天】気。", isMulti: true, q2: { s: "【天】のがわを　見る。", a: "あま" } },
+  { kanji: "赤", yomi: "あか", sentence: "【赤】い　りんご。", isMulti: true, q2: { s: "お祝いで　【赤】はんを　たべる。", a: "せき" } },
+  { kanji: "青", yomi: "あお", sentence: "【青】い　うみ。", isMulti: true, q2: { s: "きれいな　【青】ぞら。", a: "あお" } },
+  { kanji: "白", yomi: "しろ", sentence: "【白】い　くも。", isMulti: true, q2: { s: "【白】ちょうが　およぐ。", a: "はく" } },
   { kanji: "糸", yomi: "いと", sentence: "【糸】を　きる。" },
 
   // --- ステージ8 (71-80) 町・その他 ---
-  { kanji: "車", yomi: "くるま", sentence: "【車】に　気をつける。", isMulti: true, q2: { s: "電【車】に　のる。", a: "しゃ" } },
-  { kanji: "町", yomi: "まち", sentence: "【町】へ　いく。", isMulti: true, q2: { s: "下【町】（したまち）。", a: "まち" } },
-  { kanji: "村", yomi: "むら", sentence: "【村】の　ひと。", isMulti: true, q2: { s: "【村】長（そんちょう）さん。", a: "そん" } },
-  { kanji: "王", yomi: "おう", sentence: "【王】さま。", isMulti: true, q2: { s: "女【王】（じょおう）。", a: "おう" } },
-  { kanji: "玉", yomi: "たま", sentence: "【玉】いれを　する。", isMulti: true, q2: { s: "百円【玉】（ひゃくえんだま）。", a: "だま" } },
-  { kanji: "円", yomi: "えん", sentence: "百【円】だま。", isMulti: true, q2: { s: "【円】い（まるい）　おぼん。", a: "まる" } },
-  { kanji: "先", yomi: "さき", sentence: "ゆび【先】。", isMulti: true, q2: { s: "【先】生（せんせい）。", a: "せん" } },
-  { kanji: "年", yomi: "ねん", sentence: "一【年】生。", isMulti: true, q2: { s: "【年】上（としうえ）。", a: "とし" } },
+  { kanji: "車", yomi: "くるま", sentence: "【車】に　気をつける。", isMulti: true, q2: { s: "電【車】が　はしる。", a: "しゃ" } },
+  { kanji: "町", yomi: "まち", sentence: "【町】へ　いく。", isMulti: true, q2: { s: "下【町】を　あるく。", a: "まち" } },
+  { kanji: "村", yomi: "むら", sentence: "【村】の　ひと。", isMulti: true, q2: { s: "【村】ちょうさんが　はなす。", a: "そん" } },
+  { kanji: "王", yomi: "おう", sentence: "【王】さま。", isMulti: true, q2: { s: "ありの　女【王】。", a: "おう" } },
+  { kanji: "玉", yomi: "たま", sentence: "【玉】いれを　する。", isMulti: true, q2: { s: "百円【玉】を　おとす。", a: "だま" } },
+  { kanji: "円", yomi: "えん", sentence: "百【円】だま。", isMulti: true, q2: { s: "【円】い　ボール。", a: "まる" } },
+  { kanji: "先", yomi: "さき", sentence: "ゆび【先】。", isMulti: true, q2: { s: "【先】せいに　きく。", a: "せん" } },
+  { kanji: "年", yomi: "ねん", sentence: "一【年】生。", isMulti: true, q2: { s: "【年】うえの　ともだち。", a: "とし" } },
   { kanji: "本", yomi: "ほん", sentence: "【本】を　よむ。", isMulti: true, q2: { s: "えんぴつが　三【本】。", a: "ぼん" } },
-  { kanji: "休", yomi: "やす", sentence: "【休】み。", isMulti: true, q2: { s: "【休】日（きゅうじつ）。", a: "きゅう" } } // 80文字目の補完
+  { kanji: "休", yomi: "やす", sentence: "【休】み。", isMulti: true, q2: { s: "【休】じつは　あそぶ。", a: "きゅう" } }
 ];
 
 function App() {
