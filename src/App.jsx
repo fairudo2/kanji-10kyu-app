@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級 全80文字データ（読み・書き両対応）
+// 漢検10級全80文字データ
 const kanjiList = [
   { kanji: "一", yomi: "いち", sentence: "一（　）ねんせいに　なる。" },
   { kanji: "二", yomi: "に", sentence: "みかんが　二（　）こ　ある。" },
@@ -85,8 +85,8 @@ const kanjiList = [
 ];
 
 function App() {
-  const [view, setView] = useState('menu'); // menu, stageSelect, quiz, stageClear
-  const [mode, setMode] = useState('read'); // 'read' (読み) or 'write' (書き)
+  const [view, setView] = useState('menu'); 
+  const [mode, setMode] = useState('read'); 
   const [currentStage, setCurrentStage] = useState(0);
   const [stageList, setStageList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -109,13 +109,11 @@ function App() {
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   };
 
-  // メニューでモードを選ぶ
   const selectMode = (m) => {
     setMode(m);
     setView('stageSelect');
   };
 
-  // ステージを選ぶ
   const selectStage = (stageIdx) => {
     const startIdx = stageIdx * 10;
     const list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
@@ -126,24 +124,19 @@ function App() {
     makeChoices(list[0], mode);
   };
 
-  // 選択肢を作る
   const makeChoices = (question, currentMode) => {
     if (!question) return;
+    const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
+    const allKanjis = kanjiList.map(k => k.kanji);
     
     let correct, distractors;
-
     if (currentMode === 'read') {
-      // 読みモード：正解は「ひらがな」、選択肢も「ひらがな」
       correct = question.yomi;
-      const allYomis = Array.from(new Set(kanjiList.map(k => k.yomi)));
       distractors = allYomis.filter(y => y !== correct).sort(() => Math.random() - 0.5).slice(0, 2);
     } else {
-      // 書きモード：正解は「漢字」、選択肢も「漢字」
       correct = question.kanji;
-      const allKanjis = kanjiList.map(k => k.kanji);
       distractors = allKanjis.filter(k => k !== correct).sort(() => Math.random() - 0.5).slice(0, 2);
     }
-
     setChoices([correct, ...distractors].sort(() => Math.random() - 0.5));
   };
 
@@ -162,7 +155,6 @@ function App() {
           makeChoices(stageList[nextIdx], mode);
           setIsCorrect(null);
         } else {
-          // クリア処理
           if (mode === 'read') {
             setClearedStagesRead(prev => Array.from(new Set([...prev, currentStage])));
           } else {
@@ -181,26 +173,22 @@ function App() {
     }
   };
 
-  // 問題文の表示（モードによって出し分ける）
   const renderQuestionText = () => {
     const q = stageList[currentIndex];
     if (mode === 'read') {
-      // 読みモード：漢字を表示して読みを問う
-      // sentence: "一（　）ねんせいに..." -> 漢字はそのまま表示
+      // 修正ポイント：漢字の部分だけを正確に抜き出して、そこだけに赤線を引くように修正
+      const parts = q.sentence.split(new RegExp(`(${q.kanji})`, 'g'));
       return (
         <>
           <div className="kanji-box">{q.kanji}</div>
           <div className="sentence">
-             {q.sentence.split(/（|）/).map((part, i) => 
-               // 漢字が含まれる部分を強調
-               part.includes(q.kanji) ? <span key={i} className="highlight">{part}</span> : part
+             {parts.map((part, i) => 
+               part === q.kanji ? <span key={i} className="highlight">{part}</span> : part
              )}
           </div>
         </>
       );
     } else {
-      // 書きモード：読みを表示して漢字を問う
-      // sentence: "一（　）ねんせいに..." -> 漢字を隠して読みを表示
       const hiddenSentence = q.sentence.replace(q.kanji, '⬜');
       return (
         <>
@@ -218,7 +206,6 @@ function App() {
         <div className="star s1">✨</div><div className="star s2">✨</div>
       </div>
       
-      {/* メインメニュー */}
       {view === 'menu' && (
         <div className="card menu-card popup">
           <div className="header title-font">🎀 かんけん10きゅう 🎀</div>
@@ -236,7 +223,6 @@ function App() {
         </div>
       )}
 
-      {/* ステージ選択 */}
       {view === 'stageSelect' && (
         <div className="card menu-card popup">
           <div className="header title-font">
@@ -257,7 +243,6 @@ function App() {
         </div>
       )}
 
-      {/* クイズ画面 */}
       {view === 'quiz' && (
         <div className="card quiz-card popup">
           <div className="header">✨ ステージ {currentStage + 1} ✨</div>
@@ -277,7 +262,6 @@ function App() {
         </div>
       )}
 
-      {/* クリア画面 */}
       {view === 'stageClear' && (
         <div className="card clear-card popup">
           {showConfetti && <div className="confetti">🎉🎊✨</div>}
@@ -324,7 +308,6 @@ function App() {
         .header { font-weight: bold; font-size: 1.5rem; margin-bottom: 20px; color: #ff69b4; }
         .menu-sub { font-size: 1.2rem; color: #666; margin-bottom: 30px; font-weight: bold; }
         
-        /* モード選択ボタン */
         .mode-grid { display: grid; gap: 20px; }
         .btn-mode {
           padding: 25px; border-radius: 30px; border: none; color: white; cursor: pointer;
@@ -373,10 +356,6 @@ function App() {
         .btn-back { margin-top: 30px; background: rgba(255,255,255,0.5); border: none; color: #ff69b4; font-weight: bold; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
         .overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 7rem; z-index: 100; pointer-events: none; text-shadow: 3px 3px 0 #fff; }
         .ok { color: #ff69b4; } .ng { color: #5c9eff; }
-        .finish-title { font-size: 2.5rem; margin-bottom: 20px; }
-        .finish-icon { font-size: 6rem; margin: 20px 0; }
-        .btn-restart { background: linear-gradient(to bottom, #ff758c, #ff7eb3); box-shadow: 0 8px 0 #e65a70; width: 100%; font-size: 1.8rem; border-radius: 50px; color: white; border: none; padding: 20px; font-weight: bold; margin-top: 30px; cursor: pointer; }
-        .btn-restart:active { transform: translateY(8px); box-shadow: none; }
         
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
