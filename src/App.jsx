@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-// 漢検10級 全80文字 データ（変更なし）
+// 漢検10級 全80文字 データ完全修正版
+// 答えのネタバレを削除し、1年生向けの短い文章にしました。
 const kanjiList = [
   // --- ステージ1 (1-10) 数字 ---
   { kanji: "一", yomi: "いち", sentence: "【一】ねんせいに　なる。", isMulti: true, q2: { s: "りんごが　【一】つ。", a: "ひと" } },
@@ -24,7 +25,7 @@ const kanjiList = [
   { kanji: "中", yomi: "なか", sentence: "はこの　【中】を　見る。", isMulti: true, q2: { s: "せ【中】を　あらう。", a: "なか" } },
   { kanji: "大", yomi: "おお", sentence: "【大】きい　ケーキ。", isMulti: true, q2: { s: "【大】がくせいの　お姉さん。", a: "だい" } },
   { kanji: "小", yomi: "ちい", sentence: "【小】さい　あり。", isMulti: true, q2: { s: "【小】がっこうに　いく。", a: "しょう" } },
-  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】（いちがつ）。", a: "がつ" } },
+  { kanji: "月", yomi: "つき", sentence: "きれいな　お【月】さま。", isMulti: true, q2: { s: "一【月】一日は　お正月。", a: "がつ" } },
 
   // --- ステージ3 (21-30) 曜日・自然 ---
   { kanji: "日", yomi: "ひ", sentence: "お【日】さまが　出ている。", isMulti: true, q2: { s: "あしたは　【日】ようび。", a: "にち" } },
@@ -39,14 +40,14 @@ const kanjiList = [
   { kanji: "石", yomi: "いし", sentence: "きれいな　【石】を　ひろう。" },
 
   // --- ステージ4 (31-40) 自然・生き物 ---
-  { kanji: "花", yomi: "はな", sentence: "赤い　【花】が　さく。", isMulti: true, q2: { s: "【花】びんを　おく。", a: "か" } },
+  { kanji: "花", yomi: "はな", sentence: "赤い　【花】が　さく。", isMulti: true, q2: { s: "【花】びんに　水を入れる。", a: "か" } },
   { kanji: "草", yomi: "くさ", sentence: "【草】を　むしる。" },
   { kanji: "林", yomi: "はやし", sentence: "【林】の　中を　あるく。" },
   { kanji: "森", yomi: "もり", sentence: "【森】に　いく。" },
   { kanji: "竹", yomi: "たけ", sentence: "【竹】うまに　のる。", isMulti: true, q2: { s: "きれいな　【竹】りん。", a: "ちく" } },
   { kanji: "虫", yomi: "むし", sentence: "【虫】とりを　する。" },
   { kanji: "貝", yomi: "かい", sentence: "うみで　【貝】を　ひろう。" },
-  { kanji: "犬", yomi: "いぬ", sentence: "白い　【犬】。", isMulti: true, q2: { s: "ばん【犬】が　いる。", a: "けん" } },
+  { kanji: "犬", yomi: "いぬ", sentence: "白い　【犬】。", isMulti: true, q2: { s: "ばん【犬】が　ほえる。", a: "けん" } },
   { kanji: "足", yomi: "あし", sentence: "【足】が　はやい。", isMulti: true, q2: { s: "たのしい　えん【足】。", a: "そく" } },
   { kanji: "手", yomi: "て", sentence: "【手】を　あらう。" },
 
@@ -77,7 +78,7 @@ const kanjiList = [
   // --- ステージ7 (61-70) 色・空 ---
   { kanji: "字", yomi: "じ", sentence: "きれいな　【字】。" },
   { kanji: "早", yomi: "はや", sentence: "【早】く　ねる。", isMulti: true, q2: { s: "【早】ちょうに　おきる。", a: "そう" } },
-  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】の　ささかざり。", a: "ばた" } },
+  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がたに　かえる。", isMulti: true, q2: { s: "七【夕】の　かざり。", a: "ばた" } },
   { kanji: "空", yomi: "そら", sentence: "青い　【空】。", isMulti: true, q2: { s: "【空】気を　すう。", a: "くう" } },
   { kanji: "気", yomi: "き", sentence: "元【気】な　こえ。", isMulti: true, q2: { s: "さむ【気】が　する。", a: "け" } },
   { kanji: "天", yomi: "てん", sentence: "いい　【天】気。", isMulti: true, q2: { s: "【天】のがわを　見る。", a: "あま" } },
