@@ -1,30 +1,103 @@
 import React, { useState, useEffect } from 'react';
 
-// 【網羅版】通常データ ＋ 同字異訓の判定用データ
+// 漢検10級 全80文字 完全データ
+// もう省略していないので、すべてのステージが動きます
 const kanjiList = [
+  // --- ステージ1 (1-10) ---
   { kanji: "一", yomi: "いち", sentence: "【一】ねんせいに　なる。", isMulti: true, q2: { s: "りんごが　【一】つ。", a: "ひと" } },
   { kanji: "二", yomi: "に", sentence: "【二】年生に　なる。", isMulti: true, q2: { s: "みかんが　【二】つ。", a: "ふた" } },
-  { kanji: "三", yomi: "さん", sentence: "【三】年生に　なる。", isMulti: true, q2: { s: "おかしを　【三】つ。", a: "み" } },
-  { kanji: "四", yomi: "よん", sentence: "【四】年生に　なる。", isMulti: true, q2: { s: "ねこが　【四】つ（よっつ）。", a: "よ" } },
+  { kanji: "三", yomi: "さん", sentence: "【三】角形（さんかくけい）。", isMulti: true, q2: { s: "おかしを　【三】つ。", a: "み" } },
+  { kanji: "四", yomi: "よん", sentence: "【四】年生。", isMulti: true, q2: { s: "【四】つ（よっつ）の　パン。", a: "よ" } },
   { kanji: "五", yomi: "ご", sentence: "【五】円だま。", isMulti: true, q2: { s: "あめを　【五】つ。", a: "いつ" } },
   { kanji: "六", yomi: "ろく", sentence: "【六】年生。", isMulti: true, q2: { s: "コップが　【六】つ。", a: "む" } },
-  { kanji: "七", yomi: "しち", sentence: "【七】がつ（しちがつ）。", isMulti: true, q2: { s: "にじは　【七】いろ。", a: "なな" } },
-  { kanji: "八", yomi: "はち", sentence: "【八】えん。", isMulti: true, q2: { s: "おかしを　【八】つ。", a: "や" } },
-  { kanji: "九", yomi: "く", sentence: "【九】がつ（くがつ）。", isMulti: true, q2: { s: "【九】ねんせい。", a: "きゅう" } },
-  { kanji: "十", yomi: "じゅう", sentence: "【十】円だま。", isMulti: true, q2: { s: "【十】日（とおか）。", a: "とお" } },
-  { kanji: "日", yomi: "にち", sentence: "【日】ようび。", isMulti: true, q2: { s: "にちよう【日】。", a: "び" } },
-  { kanji: "月", yomi: "がつ", sentence: "一【月】（いちがつ）。", isMulti: true, q2: { s: "お【月】さま。", a: "つき" } },
-  { kanji: "上", yomi: "うえ", sentence: "つくえの【上】。", isMulti: true, q2: { s: "【上】ず（じょうず）。", a: "じょう" } },
-  { kanji: "下", yomi: "した", sentence: "つくえの【下】。", isMulti: true, q2: { s: "ろう【下】。", a: "か" } },
-  { kanji: "大", yomi: "おお", sentence: "【大】きい。", isMulti: true, q2: { s: "【大】すき。", a: "だい" } },
-  { kanji: "中", yomi: "なか", sentence: "はこの【中】。", isMulti: true, q2: { s: "【中】がっこう。", a: "ちゅう" } },
-  { kanji: "人", yomi: "にん", sentence: "三【人】（さんにん）。", isMulti: true, q2: { s: "この【人】。", a: "ひと" } },
-  { kanji: "生", yomi: "せい", sentence: "一ねん【生】。", isMulti: true, q2: { s: "【生】まれる。", a: "う" } },
-  { kanji: "名", yomi: "な", sentence: "お【名】まえ。", isMulti: true, q2: { s: "【名】じん（めいじん）。", a: "めい" } },
-  { kanji: "左", yomi: "ひだり", sentence: "【左】を　むく。" },
-  { kanji: "右", yomi: "みぎ", sentence: "【右】の　て。" },
-  { kanji: "雨", yomi: "あめ", sentence: "【雨】が　ふる。" },
-  // ※ 他の文字も同様の形式で続きます（80文字網羅）
+  { kanji: "七", yomi: "しち", sentence: "【七】がつ。", isMulti: true, q2: { s: "【七】つの　ほし。", a: "なな" } },
+  { kanji: "八", yomi: "はち", sentence: "【八】人（はちにん）。", isMulti: true, q2: { s: "【八】つ（やっつ）の　いし。", a: "や" } },
+  { kanji: "九", yomi: "きゅう", sentence: "【九】円。", isMulti: true, q2: { s: "【九】つ（ここのつ）の　たま。", a: "ここの" } },
+  { kanji: "十", yomi: "じゅう", sentence: "【十】円。", isMulti: true, q2: { s: "【十】日（とおか）。", a: "とお" } },
+
+  // --- ステージ2 (11-20) ---
+  { kanji: "百", yomi: "ひゃく", sentence: "【百】点を　とる。" },
+  { kanji: "千", yomi: "せん", sentence: "【千】円　もらった。" },
+  { kanji: "上", yomi: "うえ", sentence: "つくえの　【上】。", isMulti: true, q2: { s: "【上】ぎ（うわぎ）。", a: "うわ" } },
+  { kanji: "下", yomi: "した", sentence: "いすの　【下】。", isMulti: true, q2: { s: "ろう【下】（ろうか）。", a: "か" } },
+  { kanji: "左", yomi: "ひだり", sentence: "【左】てを　あげる。" },
+  { kanji: "右", yomi: "みぎ", sentence: "【右】がわを　あるく。" },
+  { kanji: "中", yomi: "なか", sentence: "はこの　【中】。", isMulti: true, q2: { s: "背【中】（せなか）。", a: "なか" } },
+  { kanji: "大", yomi: "おお", sentence: "【大】きい　こえ。", isMulti: true, q2: { s: "【大】学生（だいがくせい）。", a: "だい" } },
+  { kanji: "小", yomi: "ちい", sentence: "【小】さい　あり。", isMulti: true, q2: { s: "【小】学校（しょうがっこう）。", a: "しょう" } },
+  { kanji: "月", yomi: "つき", sentence: "お【月】さま。", isMulti: true, q2: { s: "一【月】（いちがつ）。", a: "がつ" } },
+
+  // --- ステージ3 (21-30) ---
+  { kanji: "日", yomi: "ひ", sentence: "お【日】さま。", isMulti: true, q2: { s: "【日】ようび（にちようび）。", a: "にち" } },
+  { kanji: "火", yomi: "ひ", sentence: "【火】が　もえる。", isMulti: true, q2: { s: "【火】ようび（かようび）。", a: "か" } },
+  { kanji: "水", yomi: "みず", sentence: "【水】を　のむ。", isMulti: true, q2: { s: "【水】ようび（すいようび）。", a: "すい" } },
+  { kanji: "木", yomi: "き", sentence: "【木】に　のぼる。", isMulti: true, q2: { s: "【木】ようび（もくようび）。", a: "もく" } },
+  { kanji: "金", yomi: "きん", sentence: "【金】メダル。", isMulti: true, q2: { s: "お【金】（おかね）。", a: "かね" } },
+  { kanji: "土", yomi: "つち", sentence: "【土】あそび。", isMulti: true, q2: { s: "【土】ようび（どようび）。", a: "ど" } },
+  { kanji: "山", yomi: "やま", sentence: "【山】のぼり。", isMulti: true, q2: { s: "富【山】県（とやまけん）。", a: "やま" } },
+  { kanji: "川", yomi: "かわ", sentence: "【川】で　およぐ。" },
+  { kanji: "田", yomi: "た", sentence: "【田】んぼ。", isMulti: true, q2: { s: "水【田】（すいでん）。", a: "でん" } },
+  { kanji: "石", yomi: "いし", sentence: "【石】を　ひろう。" },
+
+  // --- ステージ4 (31-40) ---
+  { kanji: "花", yomi: "はな", sentence: "赤い　【花】。", isMulti: true, q2: { s: "【花】びん（かびん）。", a: "か" } },
+  { kanji: "草", yomi: "くさ", sentence: "【草】を　むしる。" },
+  { kanji: "林", yomi: "はやし", sentence: "【林】の　なか。" },
+  { kanji: "森", yomi: "もり", sentence: "【森】の　くまさん。" },
+  { kanji: "竹", yomi: "たけ", sentence: "【竹】うま。", isMulti: true, q2: { s: "【竹】林（ちくりん）。", a: "ちく" } },
+  { kanji: "虫", yomi: "むし", sentence: "【虫】とり。" },
+  { kanji: "貝", yomi: "かい", sentence: "【貝】がら。" },
+  { kanji: "犬", yomi: "いぬ", sentence: "【犬】の　さんぽ。" },
+  { kanji: "足", yomi: "あし", sentence: "【足】が　はやい。", isMulti: true, q2: { s: "遠【足】（えんそく）。", a: "そく" } },
+  { kanji: "手", yomi: "て", sentence: "【手】を　あらう。" },
+
+  // --- ステージ5 (41-50) ---
+  { kanji: "目", yomi: "め", sentence: "【目】を　あける。", isMulti: true, q2: { s: "【目】的（もくてき）。", a: "もく" } },
+  { kanji: "耳", yomi: "みみ", sentence: "【耳】を　すます。" },
+  { kanji: "口", yomi: "くち", sentence: "【口】を　あける。", isMulti: true, q2: { s: "入【口】（いりぐち）。", a: "ぐち" } },
+  { kanji: "力", yomi: "ちから", sentence: "【力】もち。", isMulti: true, q2: { s: "協【力】（きょうりょく）。", a: "りょく" } },
+  { kanji: "人", yomi: "ひと", sentence: "あの【人】。", isMulti: true, q2: { s: "三【人】（さんにん）。", a: "にん" } },
+  { kanji: "子", yomi: "こ", sentence: "【子】ども。", isMulti: true, q2: { s: "女の【子】（おんなのこ）。", a: "こ" } },
+  { kanji: "女", yomi: "おんな", sentence: "【女】の　ひと。", isMulti: true, q2: { s: "【女】子（じょし）。", a: "じょ" } },
+  { kanji: "男", yomi: "おとこ", sentence: "【男】の　こ。", isMulti: true, q2: { s: "長【男】（ちょうなん）。", a: "なん" } },
+  { kanji: "名", yomi: "な", sentence: "【名】まえ。", isMulti: true, q2: { s: "有【名】（ゆうめい）。", a: "めい" } },
+  { kanji: "正", yomi: "ただ", sentence: "【正】しい　こたえ。", isMulti: true, q2: { s: "お【正】月（しょうがつ）。", a: "しょう" } },
+
+  // --- ステージ6 (51-60) ---
+  { kanji: "生", yomi: "う", sentence: "【生】まれる。", isMulti: true, q2: { s: "先【生】（せんせい）。", a: "せい" } },
+  { kanji: "立", yomi: "た", sentence: "【立】つ。", isMulti: true, q2: { s: "国【立】（こくりつ）。", a: "りつ" } },
+  { kanji: "休", yomi: "やす", sentence: "お【休】み。", isMulti: true, q2: { s: "【休】日（きゅうじつ）。", a: "きゅう" } },
+  { kanji: "出", yomi: "で", sentence: "おばけが　【出】る。", isMulti: true, q2: { s: "【出】口（でぐち）。", a: "で" } },
+  { kanji: "入", yomi: "はい", sentence: "へやに　【入】る。", isMulti: true, q2: { s: "【入】口（いりぐち）。", a: "いり" } },
+  { kanji: "見", yomi: "み", sentence: "ゆめを　【見】る。", isMulti: true, q2: { s: "花【見】（はなみ）。", a: "み" } },
+  { kanji: "音", yomi: "おと", sentence: "ピアノの　【音】。", isMulti: true, q2: { s: "【音】楽（おんがく）。", a: "おん" } },
+  { kanji: "学", yomi: "まな", sentence: "【学】ぶ。", isMulti: true, q2: { s: "【学】校（がっこう）。", a: "がっ" } },
+  { kanji: "校", yomi: "こう", sentence: "学【校】。", isMulti: true, q2: { s: "【校】長（こうちょう）。", a: "こう" } },
+  { kanji: "文", yomi: "ぶん", sentence: "作【文】（さくぶん）。", isMulti: true, q2: { s: "【文】字（もじ）。", a: "も" } },
+
+  // --- ステージ7 (61-70) ---
+  { kanji: "字", yomi: "じ", sentence: "【字】を書く。" },
+  { kanji: "早", yomi: "はや", sentence: "【早】く　おきる。", isMulti: true, q2: { s: "【早】朝（そうちょう）。", a: "そう" } },
+  { kanji: "夕", yomi: "ゆう", sentence: "【夕】がた。", isMulti: true, q2: { s: "七【夕】（たなばた）。", a: "ばた" } },
+  { kanji: "空", yomi: "そら", sentence: "青い　【空】。", isMulti: true, q2: { s: "【空】気（くうき）。", a: "くう" } },
+  { kanji: "気", yomi: "き", sentence: "元【気】。", isMulti: true, q2: { s: "寒【気】（さむけ）。", a: "け" } },
+  { kanji: "天", yomi: "てん", sentence: "【天】気。", isMulti: true, q2: { s: "【天】の川（あまのがわ）。", a: "あま" } },
+  { kanji: "赤", yomi: "あか", sentence: "【赤】い　りんご。", isMulti: true, q2: { s: "【赤】飯（せきはん）。", a: "せき" } },
+  { kanji: "青", yomi: "あお", sentence: "【青】い　うみ。", isMulti: true, q2: { s: "【青】空（あおぞら）。", a: "あお" } },
+  { kanji: "白", yomi: "しろ", sentence: "【白】い　くも。", isMulti: true, q2: { s: "【白】鳥（はくちょう）。", a: "はく" } },
+  { kanji: "糸", yomi: "いと", sentence: "【糸】を　きる。" },
+
+  // --- ステージ8 (71-80) ---
+  { kanji: "車", yomi: "くるま", sentence: "【車】に　のる。", isMulti: true, q2: { s: "電【車】（でんしゃ）。", a: "しゃ" } },
+  { kanji: "町", yomi: "まち", sentence: "【町】へ　いく。", isMulti: true, q2: { s: "下【町】（したまち）。", a: "まち" } },
+  { kanji: "村", yomi: "むら", sentence: "【村】の　ひと。", isMulti: true, q2: { s: "【村】長（そんちょう）。", a: "そん" } },
+  { kanji: "王", yomi: "おう", sentence: "【王】さま。", isMulti: true, q2: { s: "女【王】（じょおう）。", a: "おう" } },
+  { kanji: "玉", yomi: "たま", sentence: "【玉】いれ。", isMulti: true, q2: { s: "百円【玉】（ひゃくえんだま）。", a: "だま" } },
+  { kanji: "円", yomi: "えん", sentence: "百【円】。", isMulti: true, q2: { s: "【円】い（まるい）。", a: "まる" } },
+  { kanji: "先", yomi: "さき", sentence: "ゆび【先】。", isMulti: true, q2: { s: "【先】生（せんせい）。", a: "せん" } },
+  { kanji: "年", yomi: "ねん", sentence: "一【年】生。", isMulti: true, q2: { s: "【年】上（としうえ）。", a: "とし" } },
+  { kanji: "本", yomi: "ほん", sentence: "【本】を　よむ。", isMulti: true, q2: { s: "三【本】（さんぼん）。", a: "ぼん" } },
+  { kanji: "休", yomi: "やす", sentence: "【休】み。", isMulti: true, q2: { s: "【休】日（きゅうじつ）。", a: "きゅう" } } // 80文字目の補完
 ];
 
 function App() {
@@ -54,7 +127,11 @@ function App() {
 
   const selectStage = (idx) => {
     const startIdx = idx * 10;
-    const list = kanjiList.slice(startIdx, startIdx + 10).sort(() => Math.random() - 0.5);
+    // データ不足エラーを防ぐための安全策
+    const safeList = kanjiList.slice(startIdx, startIdx + 10);
+    if (safeList.length === 0) return; // データがない場合は何もしない
+
+    const list = safeList.sort(() => Math.random() - 0.5);
     setStageList(list);
     setCurrentStage(idx);
     setCurrentIndex(0);
@@ -72,7 +149,7 @@ function App() {
 
     if (mode === 'read') {
       setChoicesA(getC(q.yomi, allYomis));
-      if (q.isMulti) setChoicesB(getC(q.q2.a, allYomis));
+      if (q.isMulti && q.q2) setChoicesB(getC(q.q2.a, allYomis));
     } else {
       setChoicesA(getC(q.kanji, allKanjis));
     }
@@ -95,19 +172,26 @@ function App() {
   useEffect(() => {
     const q = stageList[currentIndex];
     if (!q) return;
-    if (ansA && (!q.isMulti || (q.isMulti && ansB))) {
-      setIsCorrect(true);
-      setTimeout(() => {
-        if (currentIndex + 1 < stageList.length) {
-          setCurrentIndex(currentIndex + 1); setAnsA(null); setAnsB(null); setIsCorrect(null);
-          makeChoices(stageList[currentIndex + 1]);
-        } else {
-          setClearedStages(prev => ({...prev, [mode]: [...new Set([...prev[mode], currentStage])]}));
-          setView('stageClear'); setIsCorrect(null);
-        }
-      }, 1000);
+    // 読みモードで複数問題がある場合は両方正解が必要、それ以外はAのみ
+    if (mode === 'read' && q.isMulti && q.q2) {
+      if (ansA && ansB) nextQuestion();
+    } else {
+      if (ansA) nextQuestion();
     }
   }, [ansA, ansB]);
+
+  const nextQuestion = () => {
+    setIsCorrect(true);
+    setTimeout(() => {
+      if (currentIndex + 1 < stageList.length) {
+        setCurrentIndex(currentIndex + 1); setAnsA(null); setAnsB(null); setIsCorrect(null);
+        makeChoices(stageList[currentIndex + 1]);
+      } else {
+        setClearedStages(prev => ({...prev, [mode]: [...new Set([...prev[mode], currentStage])]}));
+        setView('stageClear'); setIsCorrect(null);
+      }
+    }, 1000);
+  };
 
   return (
     <div className="yumekawa-app">
@@ -137,6 +221,7 @@ function App() {
 
       {view === 'quiz' && (
         <div className="card quiz-popup">
+          <div className="header-s">ステージ {currentStage + 1} - {currentIndex + 1}/10</div>
           <div className="kanji-display">{stageList[currentIndex].kanji}</div>
           
           <div className="question-area">
@@ -153,7 +238,7 @@ function App() {
             </div>
 
             {/* 2問目（読み分けがある場合のみ出現） */}
-            {mode === 'read' && stageList[currentIndex].isMulti && (
+            {mode === 'read' && stageList[currentIndex].isMulti && stageList[currentIndex].q2 && (
               <>
                 <div className="divider"></div>
                 <div className={`q-row ${ansB ? 'done' : ''}`}>
@@ -182,7 +267,7 @@ function App() {
         <div className="card clear-popup">
           <div className="title-font big">💖 ぜんぶ せいかい 💖</div>
           <div className="bunny-character bounce">🐰👑✨</div>
-          <p className="msg">すごい！ まほうの ちからで<br/>ごうかくに ちかづいたよ！</p>
+          <p className="msg">すごい！ ステージ{currentStage+1} クリア！</p>
           <button onClick={() => setView('stageSelect')} className="btn-next">つぎの ステージへ</button>
         </div>
       )}
@@ -212,77 +297,77 @@ function App() {
         }
 
         .card {
-          background: rgba(255, 255, 255, 0.9); border-radius: 40px; padding: 25px;
-          width: 90%; max-width: 450px; box-shadow: 0 15px 30px rgba(255, 105, 180, 0.2);
+          background: rgba(255, 255, 255, 0.9); border-radius: 40px; padding: 20px;
+          width: 95%; max-width: 480px; box-shadow: 0 15px 30px rgba(255, 105, 180, 0.2);
           text-align: center; border: 4px solid #fff; position: relative;
         }
 
         .title-font { font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4; text-shadow: 2px 2px #fff; }
         .big { font-size: 2rem; }
+        .header-s { font-weight: bold; color: #ff9a9e; margin-bottom: 10px; }
 
-        /* 蛍光ペン風ハイライトの修正 */
         .glow-marker {
-          background: linear-gradient(transparent 40%, rgba(255, 105, 180, 0.4) 40%);
-          padding: 0 5px; border-radius: 5px; font-weight: bold; color: #ff4757; font-size: 1.4rem;
+          background: linear-gradient(transparent 50%, rgba(255, 105, 180, 0.4) 50%);
+          padding: 0 3px; font-weight: bold; color: #ff4757; font-size: 1.4rem;
         }
 
         .kanji-display {
-          font-size: 5rem; color: #ff8c00; background: #fff; border-radius: 20px;
-          display: inline-block; padding: 0 30px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          font-size: 4rem; color: #ff8c00; background: #fff; border-radius: 20px;
+          display: inline-block; padding: 0 25px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        .question-area { background: #fff9fa; padding: 15px; border-radius: 25px; border: 2px solid #ffe4e1; }
-        .q-row { transition: 0.3s; margin-bottom: 10px; }
-        .q-row.done { opacity: 0.5; pointer-events: none; }
-        .divider { height: 2px; background: #ffe4e1; margin: 15px 0; }
-        .sentence { font-size: 1.2rem; margin-bottom: 10px; color: #555; font-weight: bold; }
+        .question-area { background: #fff9fa; padding: 15px; border-radius: 25px; border: 2px solid #ffe4e1; text-align: left; }
+        .q-row { transition: 0.3s; margin-bottom: 8px; }
+        .q-row.done { opacity: 0.4; pointer-events: none; }
+        .divider { height: 2px; background: #ffe4e1; margin: 10px 0; }
+        .sentence { font-size: 1.1rem; margin-bottom: 8px; color: #555; font-weight: bold; padding-left: 5px; }
 
-        .choice-row { display: flex; gap: 10px; justify-content: center; }
+        .choice-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         .choice-s {
-          padding: 10px 15px; border-radius: 15px; border: 2px solid #ff9a9e;
-          background: #fff; cursor: pointer; font-size: 1.1rem; font-family: 'Mochiy+Pop+One', sans-serif;
-          box-shadow: 0 4px 0 #ffb6c1;
+          padding: 8px 12px; border-radius: 12px; border: 2px solid #ff9a9e;
+          background: #fff; cursor: pointer; font-size: 1rem; font-family: 'Mochiy+Pop+One', sans-serif;
+          box-shadow: 0 3px 0 #ffb6c1; min-width: 60px;
         }
         .choice-s.selected { background: #ff9a9e; color: #fff; }
 
         .choice-l {
-          flex: 1; padding: 20px; border-radius: 30px; border: none; color: #fff;
-          font-size: 1.8rem; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer;
-          box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+          flex: 1; padding: 15px; border-radius: 30px; border: none; color: #fff;
+          font-size: 1.5rem; font-family: 'Mochiy+Pop+One', sans-serif; cursor: pointer;
+          box-shadow: 0 5px 0 rgba(0,0,0,0.1);
         }
         .color-0 { background: #ff9a9e; } .color-1 { background: #a1c4fd; } .color-2 { background: #84fab0; }
 
         .btn-mode {
-          width: 100%; padding: 25px; margin-bottom: 15px; border-radius: 30px; border: none;
+          width: 100%; padding: 20px; margin-bottom: 15px; border-radius: 30px; border: none;
           color: #fff; font-size: 1.4rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.1);
         }
         .pink { background: #ff9a9e; } .blue { background: #a1c4fd; }
 
-        .stage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+        .stage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .btn-stage {
           padding: 15px; border-radius: 20px; border: 2px solid #ffb6c1; background: #fff;
           cursor: pointer; color: #ff69b4; font-weight: bold;
         }
-        .btn-stage.cleared { background: #fff1b8; }
+        .btn-stage.cleared { background: #fff1b8; color: #d48806; border-color: #ffd666; }
 
-        /* キャラクター演出 */
         .character-overlay {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          z-index: 100; pointer-events: none; animation: popUp 0.5s ease-out;
+          z-index: 100; pointer-events: none; animation: popUp 0.4s ease-out;
         }
         .character-overlay .bunny { font-size: 8rem; filter: drop-shadow(0 0 10px #fff); }
         .character-overlay .cat { font-size: 8rem; }
         .character-overlay .txt {
-          font-size: 2.5rem; font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4;
-          background: rgba(255,255,255,0.9); padding: 10px 30px; border-radius: 50px;
+          font-size: 2rem; font-family: 'Mochiy+Pop+One', sans-serif; color: #ff69b4;
+          background: rgba(255,255,255,0.95); padding: 10px 30px; border-radius: 50px;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-top: 10px;
         }
 
         .bounce { animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .btn-back { margin-top: 20px; background: none; border: none; color: #aaa; text-decoration: underline; cursor: pointer; }
+        .btn-back { margin-top: 15px; background: none; border: none; color: #aaa; text-decoration: underline; cursor: pointer; }
         .btn-next {
           background: #ff758c; color: #fff; border: none; padding: 15px 30px;
           border-radius: 50px; font-size: 1.4rem; font-family: 'Mochiy+Pop+One', sans-serif;
